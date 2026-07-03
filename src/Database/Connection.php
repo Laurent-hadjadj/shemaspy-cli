@@ -13,14 +13,12 @@ use SchemaSpyCli\Exceptions\ConnectionException;
 
 final class Connection
 {
-    private array $params;
-    private Logger $logger;
     private ?\PDO $pdo = null;
 
-    public function __construct(array $params, Logger $logger)
-    {
-        $this->params = $params;
-        $this->logger = $logger;
+    public function __construct(
+        private readonly array $params,
+        private readonly Logger $logger
+    ) {
     }
 
     public function test(): bool

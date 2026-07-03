@@ -16,9 +16,6 @@ use SchemaSpyCli\Utils\OutputNameGenerator;
 
 final class InteractiveMode
 {
-    private Config $config;
-    private Logger $logger;
-    private Validator $validator;
     private PathFinder $pathFinder;
     private OutputNameGenerator $outputNameGenerator;
     private array $lastParams = [];
@@ -33,11 +30,11 @@ final class InteractiveMode
         'error' => 'red',
     ];
 
-    public function __construct(Config $config, Logger $logger, Validator $validator)
-    {
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->validator = $validator;
+    public function __construct(
+        private readonly Config $config,
+        private readonly Logger $logger,
+        private readonly Validator $validator
+    ) {
         $this->pathFinder = new PathFinder($config, $logger);
         $this->outputNameGenerator = new OutputNameGenerator($config);
         $this->loadLastParams();

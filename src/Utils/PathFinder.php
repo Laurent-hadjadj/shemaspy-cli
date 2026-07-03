@@ -14,14 +14,13 @@ use SchemaSpyCli\Core\Logger;
 
 final class PathFinder
 {
-    private Config $config;
-    private ?Logger $logger;
-    private Environment $environment;
+    private readonly Environment $environment;
 
-    public function __construct(Config $config, ?Logger $logger = null, ?Environment $environment = null)
-    {
-        $this->config = $config;
-        $this->logger = $logger;
+    public function __construct(
+        private readonly Config $config,
+        private readonly ?Logger $logger = null,
+        ?Environment $environment = null
+    ) {
         $this->environment = $environment ?? new Environment();
     }
 

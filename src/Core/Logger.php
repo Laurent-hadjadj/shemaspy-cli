@@ -13,7 +13,6 @@ final class Logger
     private bool $quiet = false;
     private bool $verbose = false;
     private bool $colorSupport = false;
-    private bool $forceColor = false;
     private array $colorMap = [
         'red'    => "\033[31m",
         'green'  => "\033[32m",
@@ -24,9 +23,8 @@ final class Logger
         'default'=> "\033[0m",
     ];
 
-    public function __construct(bool $forceColor = false)
+    public function __construct(private bool $forceColor = false)
     {
-        $this->forceColor = $forceColor;
         $this->colorSupport = $this->forceColor || $this->supportsColor();
     }
 

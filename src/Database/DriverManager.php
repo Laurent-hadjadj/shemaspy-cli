@@ -14,16 +14,13 @@ use SchemaSpyCli\Exceptions\FileNotFoundException;
 
 final class DriverManager
 {
-    private Config $config;
-    private Logger $logger;
     private array $drivers = [];
     private array $validationResults = [];
 
-    public function __construct(Config $config, Logger $logger)
-    {
-        $this->config = $config;
-        $this->logger = $logger;
-
+    public function __construct(
+        private readonly Config $config,
+        private readonly Logger $logger
+    ) {
         // Vérifier que la config est chargée
         if (empty($this->config->getAll())) {
             throw new \RuntimeException("La configuration n'a pas été chargée avant d'initialiser DriverManager");
@@ -182,13 +179,13 @@ final class DriverManager
         }
 
         // Extraire l'algorithme et la valeur
-        if (strpos($expectedChecksum, 'sha256:') === 0) {
+        if (str_starts_with($expectedChecksum, 'sha256:')) {
             $expected = substr($expectedChecksum, 7);
             $actual = hash_file('sha256', $filePath);
             return $actual === $expected;
         }
 
-        if (strpos($expectedChecksum, 'md5:') === 0) {
+        if (str_starts_with($expectedChecksum, 'md5:')) {
             $expected = substr($expectedChecksum, 4);
             $actual = md5_file($filePath);
             return $actual === $expected;

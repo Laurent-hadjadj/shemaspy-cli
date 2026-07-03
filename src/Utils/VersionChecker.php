@@ -12,11 +12,8 @@ use SchemaSpyCli\Core\Logger;
 
 final class VersionChecker
 {
-    private Logger $logger;
-
-    public function __construct(Logger $logger)
+    public function __construct(private readonly Logger $logger)
     {
-        $this->logger = $logger;
     }
 
     public function checkJavaVersion(): ?string
@@ -41,7 +38,7 @@ final class VersionChecker
 
     public function checkRequiredPhpVersion(): bool
     {
-        return version_compare(PHP_VERSION, '7.4.0', '>=');
+        return version_compare(PHP_VERSION, '8.1.0', '>=');
     }
 
     public function checkExtensions(): array
@@ -87,7 +84,7 @@ final class VersionChecker
         
         // Vérifier la version PHP
         if (!$this->checkRequiredPhpVersion()) {
-            $issues[] = "PHP 7.4 ou supérieur requis (actuel: " . PHP_VERSION . ")";
+            $issues[] = "PHP 8.1 ou supérieur requis (actuel: " . PHP_VERSION . ")";
         }
 
         // Vérifier les extensions

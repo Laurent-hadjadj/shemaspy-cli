@@ -62,13 +62,13 @@ final class ArgumentParser
             }
 
             // Options avec valeur
-            if (strpos($arg, self::OPTIONS['config']) === 0) {
+            if (str_starts_with($arg, self::OPTIONS['config'])) {
                 $this->configFile = substr($arg, strlen(self::OPTIONS['config']));
                 continue;
             }
 
             // Paramètres --key=value
-            if (strpos($arg, '--') === 0) {
+            if (str_starts_with($arg, '--')) {
                 $this->parseParameter($arg);
                 continue;
             }
@@ -141,7 +141,7 @@ final class ArgumentParser
         return array_merge(self::EXPECTED_PARAMS, array_filter($this->params, fn($v) => $v !== null));
     }
 
-    public function getParam(string $key, $default = null)
+    public function getParam(string $key, mixed $default = null): mixed
     {
         return $this->params[$key] ?? self::EXPECTED_PARAMS[$key] ?? $default;
     }

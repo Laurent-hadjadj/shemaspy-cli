@@ -16,22 +16,14 @@ use SchemaSpyCli\Utils\PathFinder;
 
 final class PropertiesGenerator
 {
-    private Config $config;
-    private Logger $logger;
-    private Environment $environment;
     private PathFinder $pathFinder;
-    private DriverManager $driverManager;
 
     public function __construct(
-        Config $config,
-        Environment $environment,
-        Logger $logger,
-        DriverManager $driverManager)
-    {
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->environment = $environment;
-        $this->driverManager = $driverManager;
+        private readonly Config $config,
+        private readonly Environment $environment,
+        private readonly Logger $logger,
+        private readonly DriverManager $driverManager
+    ) {
         $this->pathFinder = new PathFinder($config, null);
     }
 

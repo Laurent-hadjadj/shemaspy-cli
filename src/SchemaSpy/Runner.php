@@ -18,26 +18,16 @@ use SchemaSpyCli\Exceptions\SchemaSpyException;
 
 final class Runner
 {
-    private Config $config;
-    private Logger $logger;
-    private Environment $environment;
-    private PathFinder $pathFinder;
-    private DriverManager $driverManager;
     private PropertiesGenerator $propertiesGenerator;
     private CommandBuilder $commandBuilder;
 
     public function __construct(
-        Config $config,
-        Logger $logger,
-        Environment $environment,
-        PathFinder $pathFinder,
-        DriverManager $driverManager
+        private readonly Config $config,
+        private readonly Logger $logger,
+        private readonly Environment $environment,
+        private readonly PathFinder $pathFinder,
+        private readonly DriverManager $driverManager
     ) {
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->environment = $environment;
-        $this->pathFinder = $pathFinder;
-        $this->driverManager = $driverManager;
         $this->propertiesGenerator = new PropertiesGenerator($config, $environment, $logger, $driverManager);
         $this->commandBuilder = new CommandBuilder($config, $environment, $logger, $driverManager);
     }

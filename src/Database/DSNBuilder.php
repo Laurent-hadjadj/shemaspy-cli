@@ -13,12 +13,10 @@ use SchemaSpyCli\Exceptions\ConnectionException;
 
 final class DSNBuilder
 {
-    private Config $config;
     private array $dsnTemplates = [];
 
-    public function __construct(Config $config)
+    public function __construct(private readonly Config $config)
     {
-        $this->config = $config;
         $this->initializeTemplates();
     }
 
@@ -131,7 +129,7 @@ final class DSNBuilder
         $requiredParts = ['host', 'port', 'dbname'];
 
         foreach ($requiredParts as $part) {
-            if (strpos($dsn, $part) === false) {
+            if (!str_contains($dsn, $part)) {
                 return false;
             }
         }
@@ -186,7 +184,7 @@ final class DSNBuilder
         $params = explode(';', substr($dsn, strpos($dsn, ':') + 1));
 
         foreach ($params as $param) {
-            if (strpos($param, '=') !== false) {
+            if (str_contains($param, '=')) {
                 [$key, $value] = explode('=', $param, 2);
                 $parts[$key] = $value;
             }

@@ -24,6 +24,7 @@ environnement/tools/SchemaSpy7/SCHEMA/
 # IDE
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 

@@ -23,18 +23,18 @@ use SchemaSpyCli\Exceptions\ConnectionException;
 
 final class Application
 {
-    private Config $config;
-    private Logger $logger;
-    private Environment $environment;
-    private ArgumentParser $argumentParser;
+    private readonly Config $config;
+    private readonly Logger $logger;
+    private readonly Environment $environment;
+    private readonly ArgumentParser $argumentParser;
     private ?PathFinder $pathFinder = null;
-    private Validator $validator;
-    private VersionChecker $versionChecker;
+    private readonly Validator $validator;
+    private readonly VersionChecker $versionChecker;
     private ?InteractiveMode $interactiveMode = null;
     private ?NonInteractiveMode $nonInteractiveMode = null;
     private ?Runner $runner = null;
     private ?DriverManager $driverManager = null;
-    private FileSystem $fileSystem;
+    private readonly FileSystem $fileSystem;
 
     private const BANNER = <<<'BANNER'
  ______                                             __  __
@@ -200,7 +200,7 @@ BANNER;
         // Vérifier PHP
         if (!$this->versionChecker->checkRequiredPhpVersion()) {
             $this->logger->warning(
-                "PHP 7.4 ou supérieur recommandé (actuel: " . PHP_VERSION . ")"
+                "PHP 8.1 ou supérieur recommandé (actuel: " . PHP_VERSION . ")"
             );
         }
 

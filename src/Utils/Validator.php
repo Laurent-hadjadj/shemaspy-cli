@@ -196,7 +196,7 @@ final class Validator
         }
 
         // 🔥 Ne pas autoriser les chemins relatifs dangereux
-        if (strpos($outputName, '..') !== false) {
+        if (str_contains($outputName, '..')) {
             throw new ValidationException("Le nom de sortie ne peut pas contenir '..'");
         }
 

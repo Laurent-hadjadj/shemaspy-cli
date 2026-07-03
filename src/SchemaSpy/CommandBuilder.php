@@ -15,21 +15,12 @@ use SchemaSpyCli\Database\DriverManager;
 
 final class CommandBuilder
 {
-    private Config $config;
-    private Environment $environment;
-    private Logger $logger;
-    private DriverManager $driverManager;
-
     public function __construct(
-        Config $config,
-        Environment $environment,
-        Logger $logger,
-        DriverManager $driverManager
+        private readonly Config $config,
+        private readonly Environment $environment,
+        private readonly Logger $logger,
+        private readonly DriverManager $driverManager
     ) {
-        $this->config = $config;
-        $this->environment = $environment;
-        $this->logger = $logger;
-        $this->driverManager = $driverManager;
     }
 
     public function build(string $javaExe, string $jarFile, string $propertiesFile, array $params): string

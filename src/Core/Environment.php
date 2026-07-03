@@ -10,7 +10,7 @@ namespace SchemaSpyCli\Core;
 
 final class Environment
 {
-    private bool $isWindows;
+    private readonly bool $isWindows;
     private ?string $javaHomeCache = null;
 
     public function __construct()
@@ -133,7 +133,7 @@ final class Environment
         return PHP_VERSION;
     }
 
-    public function isPhpVersionCompatible(string $minVersion = '7.4.0'): bool
+    public function isPhpVersionCompatible(string $minVersion = '8.1.0'): bool
     {
         return version_compare(PHP_VERSION, $minVersion, '>=');
     }

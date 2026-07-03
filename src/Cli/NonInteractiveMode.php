@@ -16,16 +16,13 @@ use SchemaSpyCli\Exceptions\ValidationException;
 
 final class NonInteractiveMode
 {
-    private Config $config;
-    private Logger $logger;
-    private Validator $validator;
     private OutputNameGenerator $outputNameGenerator;
 
-    public function __construct(Config $config, Logger $logger, Validator $validator)
-    {
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->validator = $validator;
+    public function __construct(
+        private readonly Config $config,
+        private readonly Logger $logger,
+        private readonly Validator $validator
+    ) {
         $this->outputNameGenerator = new OutputNameGenerator($config);
     }
 

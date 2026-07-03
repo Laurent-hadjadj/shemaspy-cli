@@ -15,17 +15,14 @@ use SchemaSpyCli\Core\Config;
 
 final class OutputNameGenerator
 {
-    private Config $config;
-
     /**
      * Format par défaut utilisé si la configuration ne définit pas
      * defaults.output_name_format.
      */
     private const DEFAULT_FORMAT = '{dbType}_{schema}_{timestamp}';
 
-    public function __construct(Config $config)
+    public function __construct(private readonly Config $config)
     {
-        $this->config = $config;
     }
 
     /**
