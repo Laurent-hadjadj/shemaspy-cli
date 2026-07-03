@@ -1,0 +1,39 @@
+# Composer
+/vendor/
+
+# Fichiers générés
+schemaspy.last.json
+/tmp/schemaspy_*.properties
+*.log
+
+# Environnement
+environnement/tools/jdk17/
+environnement/tools/SchemaSpy7/JDBC/*.jar
+environnement/tools/SchemaSpy7/SCHEMA/
+
+# JDBC drivers (si copiés depuis la racine)
+/jdbc/*.jar
+
+# JAR SchemaSpy (téléchargé via schemaspy.download_url dans config.json)
+/jar/*.jar
+
+# Rapports générés par SchemaSpy / sorties de test
+/SCHEMA/
+/test_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests - artefacts générés (le code des tests reste versionné)
+/tests/coverage/
+/tests/coverage.txt
+/tests/coverage.xml
+/tests/.phpunit.result.cache
+/coverage/

@@ -1,0 +1,161 @@
+{
+    "application": {
+        "name": "MaMoulinette - Documentation BDD",
+        "version": "3.0.0",
+        "company": "MaMoulinette",
+        "contact": "laurent_h@me.com",
+        "copyright": "© MaMoulinette - 2026"
+    },
+    "schemaspy": {
+        "version": "7.0.2",
+        "jar": "jar/schemaspy-7.0.2.jar",
+        "download_url": "https://github.com/schemaspy/schemaspy/releases/download/v7.0.2/schemaspy-7.0.2.jar"
+    },
+    "paths": {
+        "root_folder": "environnement/tools",
+        "tools_folder": "tools",
+        "schemaspy_folder": "SchemaSpy7",
+        "jdbc_folder": "jdbc",
+        "output_folder": "SCHEMA",
+        "java_folder": "jdk17",
+        "graphviz_folder": "graphviz-2.38"
+    },
+    "jdbc": {
+        "postgresql": {
+            "type": "pgsql11",
+            "port": 5432,
+            "driver": "postgresql-42.7.5.jar",
+            "version": "42.7.5",
+            "java_version": "8+",
+            "db_version": "11-18",
+            "status": "stable",
+            "download_url": "https://jdbc.postgresql.org/download/postgresql-42.7.5.jar",
+            "class": "org.postgresql.Driver",
+            "notes": "Support PostgreSQL 18, correction RULE privilege"
+        },
+        "oracle": {
+            "type": "orathin",
+            "port": 1521,
+            "driver": "ojdbc11.jar",
+            "version": "21.9.0.0",
+            "java_version": "8/11+",
+            "db_version": "19c-23c",
+            "status": "stable",
+            "download_url": "https://download.oracle.com/otn-pub/otn_software/jdbc/233/ojdbc11.jar",
+            "class": "oracle.jdbc.OracleDriver",
+            "notes": "Support Oracle 19c, 21c, 23c"
+        },
+        "mysql": {
+            "type": "mysql",
+            "port": 3306,
+            "driver": "mysql-connector-j-8.0.33.jar",
+            "version": "8.0.33",
+            "java_version": "8+",
+            "db_version": "8.0+",
+            "status": "stable",
+            "download_url": "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar",
+            "class": "com.mysql.cj.jdbc.Driver",
+            "notes": "MySQL 8.0+, version recommandée"
+        },
+        "mariadb": {
+            "type": "mysql",
+            "port": 3306,
+            "driver": "mariadb-java-client-3.5.9.jar",
+            "version": "3.5.9",
+            "java_version": "8+",
+            "db_version": "10.6-11.6",
+            "status": "stable",
+            "download_url": "https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.5.9/mariadb-java-client-3.5.9.jar",
+            "class": "org.mariadb.jdbc.Driver",
+            "notes": "Support MariaDB 10.6+, 11.x"
+        },
+        "sqlserver_jre8": {
+            "type": "sqlserver",
+            "port": 1433,
+            "driver": "mssql-jdbc-13.4.0.jre8.jar",
+            "version": "13.4.0",
+            "java_version": "8",
+            "db_version": "2016-2022",
+            "status": "stable",
+            "download_url": "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/13.4.0/mssql-jdbc-13.4.0.jre8.jar",
+            "class": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            "notes": "SQL Server 2016, 2017, 2019, 2022 avec Java 8"
+        },
+        "sqlserver_jre11": {
+            "type": "sqlserver",
+            "port": 1433,
+            "driver": "mssql-jdbc-13.4.0.jre11.jar",
+            "version": "13.4.0",
+            "java_version": "11+",
+            "db_version": "2016-2022",
+            "status": "stable",
+            "download_url": "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/13.4.0/mssql-jdbc-13.4.0.jre11.jar",
+            "class": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+            "notes": "SQL Server 2016, 2017, 2019, 2022 avec Java 11+"
+        }
+    },
+    "jdbc_validation": {
+        "enabled": true,
+        "check_checksum": false,
+        "check_version": true,
+        "warn_on_extra": true,
+        "strict_mode": false,
+        "warn_obsolete": true,
+        "cleanup_unused": false
+    },
+    "obsolete_drivers": [
+        {
+            "pattern": "mariadb-java-client-2.*",
+            "reason": "Remplacé par mariadb-java-client-3.5.9.jar",
+            "action": "delete"
+        },
+        {
+            "pattern": "mysql-connector-java-5.*",
+            "reason": "Remplacé par mysql-connector-j-8.0.33.jar",
+            "action": "delete"
+        },
+        {
+            "pattern": "mysql-connector-java-6.*",
+            "reason": "Remplacé par mysql-connector-j-8.0.33.jar",
+            "action": "delete"
+        },
+        {
+            "pattern": "ojdbc6.jar",
+            "reason": "Pour Java 6/Oracle 11g, remplacer par ojdbc11.jar",
+            "action": "warn"
+        },
+        {
+            "pattern": "sqljdbc41.jar",
+            "reason": "Pour Java 7, remplacer par mssql-jdbc-13.4.0.jre8.jar",
+            "action": "warn"
+        },
+        {
+            "pattern": "sqljdbc42.jar",
+            "reason": "Remplacé par mssql-jdbc-13.4.0.jre8.jar",
+            "action": "delete"
+        },
+        {
+            "pattern": "junixsocket-*.jar",
+            "reason": "Dépendance obsolète, non nécessaire",
+            "action": "delete"
+        }
+    ],
+    "defaults": {
+        "host": "localhost",
+        "use_vizjs": false,
+        "font": "Arial",
+        "image_format": "svg",
+        "noads": true,
+        "nologo": false,
+        "timeout": 5,
+        "output_name_format": "{dbType}_{schema}_{timestamp}"
+    },
+    "connprops": {
+        "useSSL": "false",
+        "serverTimezone": "Europe/Paris"
+    },
+    "docs": {
+        "url": "https://wiki.franceagrimer.fr/documentation",
+        "readme": "README.md"
+    }
+}

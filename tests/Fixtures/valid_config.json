@@ -1,0 +1,29 @@
+{
+    "application": {
+        "name": "Test Application",
+        "version": "1.0.0",
+        "company": "Test Company"
+    },
+    "schemaspy": {
+        "version": "7.0.2",
+        "jar": "schemaspy-7.0.2.jar"
+    },
+    "paths": {
+        "root_folder": "test_env",
+        "tools_folder": "tools",
+        "schemaspy_folder": "SchemaSpy7",
+        "jdbc_folder": "JDBC",
+        "output_folder": "SCHEMA"
+    },
+    "jdbc": {
+        "postgresql": {
+            "type": "pgsql11",
+            "port": 5432,
+            "driver": "postgresql-42.7.5.jar"
+        }
+    },
+    "defaults": {
+        "host": "localhost",
+        "timeout": 10
+    }
+}

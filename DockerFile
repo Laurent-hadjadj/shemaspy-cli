@@ -1,0 +1,40 @@
+# Image pour SchemaSpy CLI
+FROM php:8.2-cli
+
+# Installation des extensions PHP
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    libzip-dev \
+    unzip \
+    wget \
+    git \
+    && docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    pdo_mysql \
+    zip
+
+# Installation de Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Installation de Java
+RUN apt-get install -y openjdk-17-jre-headless
+
+# Installation de Graphviz
+RUN apt-get install -y graphviz
+
+# Création du dossier de travail
+WORKDIR /app
+
+# Copie des fichiers
+COPY . .
+
+# Installation des dépendances
+RUN composer install --no-dev --optimize-autoloader
+
+# Rendre le script exécutable
+RUN chmod +x bin/schemaspy
+
+# Point d'entrée
+ENTRYPOINT ["./bin/schemaspy"]
+CMD ["--help"]
