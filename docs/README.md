@@ -1,376 +1,224 @@
-# Tests unitaires
+# SchemaSpy CLI
 
-## Installation des dépendances de test
+Application PHP (`mamoulinette/schemaspy-cli`) qui pilote [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.2 (Java) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
+
+Ce document décrit l'état réel du code au 2026-07-03. Une section [Limitations connues](#limitations-connues) liste les écarts identifiés entre ce qui est censé fonctionner et ce qui fonctionne effectivement aujourd'hui — à lire avant de déployer.
+
+## Sommaire
+
+- [Prérequis](#prérequis)
+- [Installation](#installation)
+- [Comment l'application trouve ses fichiers](#comment-lapplication-trouve-ses-fichiers)
+- [Configuration](#configuration)
+- [Utilisation](#utilisation)
+- [Gestion des drivers JDBC](#gestion-des-drivers-jdbc)
+- [Tests](#tests)
+- [Docker](#docker)
+- [Architecture du code](#architecture-du-code)
+- [Dépannage](#dépannage)
+- [Limitations connues](#limitations-connues)
+
+## Prérequis
+
+| Composant | Version minimale | Rôle |
+|---|---|---|
+| PHP | 8.1 (CLI) | Exécute l'application |
+| Extensions PHP | `pdo`, `json`, + le(s) driver(s) PDO du/des SGBD ciblé(s) (`pdo_pgsql`, `pdo_mysql`, `pdo_oci`...) | Test de connexion avant de lancer SchemaSpy |
+| Java (JRE/JDK) | 11 | Exécute le JAR SchemaSpy |
+| Composer | — | Installation des dépendances PHP |
+| Graphviz | 2.38+ (optionnel) | Diagrammes de relations en image native ; à défaut, l'application bascule automatiquement sur viz.js (rendu SVG côté navigateur) |
+
+Ces prérequis sont vérifiés automatiquement au lancement (hors mode `--quiet`) et signalés sous forme d'avertissements — l'application ne bloque pas dessus, sauf pour la connexion à la base de données elle-même.
+
+## Installation
 
 ```bash
-composer install --dev
+composer install --optimize-autoloader
 
-# Tous les tests
-composer test
+# Linux/Mac
+chmod +x bin/schemaspy.sh
 
-# Avec couverture de code
-composer test-coverage
+# vérifier que tout est en place
+php src/bootstrap.php --help
+```
 
-# Test spécifique
-./vendor/bin/phpunit tests/Unit/Core/ConfigTest.php
+Voir [Limitations connues](#limitations-connues) au sujet de la commande `bin/schemaspy` déclarée dans `composer.json` (elle n'existe pas encore dans le dépôt).
 
-# Avec verbose
-./vendor/bin/phpunit --verbose
+## Comment l'application trouve ses fichiers
 
-# Avec une configuration personnalisée
-./vendor/bin/phpunit -c tests/phpunit.xml
+Au démarrage, `PathFinder::findEnvironmentPath()` cherche un dossier `paths.root_folder` (`environnement/tools` par défaut, voir `config/config.json`) :
 
-✅ Architecture modulaire complète
-23 classes organisées en 6 modules
+- **Windows** : parcourt les lettres de lecteur `C:` à `Z:` et retient la première où `<lettre>:/environnement/tools` existe.
+- **Unix/Linux** : cherche dans `/opt/environnement/tools`, `$HOME/environnement/tools`, puis `./environnement/tools`.
 
-Tests unitaires pour les composants clés
+Le dossier trouvé devient le **base path**. Tous les chemins relatifs de `config/config.json` (`schemaspy_folder`, `output_folder`, `java_folder`, `graphviz_folder`) sont ensuite résolus par rapport à ce base path — **pas** par rapport à la racine du dépôt Git. C'est une convention de déploiement : elle suppose qu'à côté du dépôt applicatif existe une arborescence partagée du type :
 
-Configuration centralisée via JSON
+```
+<base path>/
+├── SchemaSpy7/
+│   ├── schemaspy-7.0.2.jar
+│   └── SCHEMA/              # rapports générés
+├── jdk17/
+└── graphviz-2.38/
+```
 
-Support multi-SGBD (PostgreSQL, Oracle, MySQL)
+Si aucun dossier `environnement/tools` n'est trouvé, l'application se rabat sur le répertoire courant (avec un avertissement).
 
-✅ Fonctionnalités clés
-Mode interactif et non-interactif
+Le fichier de configuration lui-même est cherché dans cet ordre : le chemin donné par `--config=`, puis `<dossier de bootstrap.php>/../../<chemin>`, puis `<cwd>/<chemin>`, puis `config/config.json` par défaut.
 
-Détection automatique de Java et Graphviz
+## Configuration
 
-Génération de rapports horodatés
+`config/config.json` centralise tout. Sections principales :
 
-Gestion professionnelle des erreurs
+| Clé | Rôle |
+|---|---|
+| `application` | Nom, version, société, contact affichés dans la bannière |
+| `schemaspy.version` / `schemaspy.jar` | Version et JAR SchemaSpy à utiliser |
+| `paths.*` | Sous-dossiers résolus par rapport au base path (voir ci-dessus) |
+| `jdbc.<type>` | Un bloc par SGBD supporté : `driver` (nom de fichier attendu), `version`, `port` par défaut, `class` JDBC, `download_url` |
+| `jdbc_validation` | Active/désactive la validation des drivers au démarrage (versions, checksums, mode strict) |
+| `obsolete_drivers` | Motifs de drivers à signaler/supprimer via `bin/cleanup-drivers.php` |
+| `defaults` | Host par défaut, police, format d'image, format du nom de sortie (`{dbType}_{schema}_{timestamp}` par défaut) |
+| `connprops` | Propriétés de connexion JDBC additionnelles (ex. `serverTimezone`) |
 
-Support Docker pour les tests
+Les types de bases de données proposés en mode interactif et acceptés en mode non-interactif (`--db=`) sont **dérivés dynamiquement** des clés de la section `jdbc` — ajouter un SGBD ne demande pas de modifier le code PHP.
 
-🚀 Prochaines étapes pour tester
-bash
-# 1. Structure
-mkdir -p schemaspy-cli/{src,config,tests,bin}
-# Copier tous les fichiers fournis
+Aucun secret n'est stocké dans `config/config.json` (les identifiants de connexion sont fournis à chaque exécution, en interactif ou via `--user`/`--password`).
 
-# 2. Installer les dépendances
-cd schemaspy-cli
-composer install
+## Utilisation
 
-# 3. Rendre exécutable
-chmod +x bin/schemaspy
+### Mode interactif
 
-# 4. Tester
-./bin/schemaspy --help
-
-# 5. Lancer en mode interactif
-./bin/schemaspy
-
-# 6. Tests unitaires
-composer test
-💡 Améliorations futures possibles
-Si vous voulez pousser encore plus loin :
-
-Interface web - Une petite interface pour visualiser les rapports
-
-Notifications - Envoyer un email/slack à la fin de la génération
-
-Comparaison - Comparer deux schémas de bases de données
-
-Planification - Génération automatique avec cron
-
-Multi-environnements - Support de plusieurs fichiers de config (dev/prod)
-
-🎯 Points d'attention
-Pensez à télécharger les drivers JDBC dans environnement/tools/SchemaSpy7/JDBC/
-
-Vérifiez que Java 11+ est installé
-
-Les extensions PHP pdo_pgsql, pdo_mysql, pdo_oci doivent être activées
-
-N'hésitez pas si vous avez des questions lors des tests ou si vous voulez ajouter d'autres fonctionnalités. Je suis là pour vous aider ! 🚀
-
-# 1. Placer vos drivers dans le dossier jdbc/
-cp *.jar jdbc/
-
-# 2. Vérifier les drivers
-./bin/check-drivers.php
-
-# 3. Voir la vérification dans l'application
-./bin/schemaspy
-
-# 4. Mode verbeux pour plus de détails
-./bin/schemaspy --verbose
-
-✅ Centralisation - Tous les drivers dans un dossier jdbc/ à la racine
-
-✅ Vérification du dossier vide - Message clair si aucun driver
-
-✅ Validation des versions - Comparaison avec config.json
-
-✅ Détection des drivers supplémentaires - Avertissement pour les drivers non configurés
-
-✅ Mode strict - Option pour bloquer si drivers manquants
-
-✅ Script de vérification - bin/check-drivers.php pour diagnostiquer
-
-✅ Informations détaillées - Taille, version, chemin dans les logs
-
-✅ Support de tous vos drivers - PostgreSQL, Oracle, MySQL, MariaDB, SQL Server, etc.
-
-Le système est maintenant robuste et vous donne une visibilité complète sur vos drivers JDBC ! 🚀
-
- PostgreSQL Driver - postgresql-42.7.5.jar
-Bonnes nouvelles :
-
-Votre driver PostgreSQL est à jour ! La version 42.7.5 est la dernière version stable disponible . Elle supporte PostgreSQL 18 .
-
-Un point important : la version 42.7.5 inclut une correction spécifique pour PostgreSQL 18 concernant la suppression du privilège RULE . C'est exactement le type de compatibilité que vous voulez avoir.
-
-⚠️ Oracle Drivers - ojdbc11.jar et ojdbc6.jar
-ojdbc11.jar - Version OK pour les bases Oracle récentes (19c, 21c, 23c) . Supporte Java 11, 17, 19 et 21 .
-
-ojdbc6.jar - À considérer pour les anciennes versions Oracle 11g R2 uniquement . Si vous utilisez Oracle 12c ou plus récent, privilégiez ojdbc11.jar.
-
-⚠️ MySQL Drivers - plusieurs versions
-mysql-connector-java-8.0.33.jar - Version recommandée pour MySQL 8.0+
-
-mysql-connector-java-6.0.4.jar - Version plus ancienne, à remplacer par la 8.0.33 si possible
-
-mysql-connector-java-5.1.38-bin.jar - Pour MySQL 5.x uniquement
-
-📌 MariaDB Driver - mariadb-java-client-2.2.1.jar
-Version fonctionnelle mais ancienne (2.7.x disponible). Si vous utilisez MariaDB 10.6+, envisagez une mise à jour.
-
-📌 SQL Server Drivers
-sqljdbc42.jar - OK pour SQL Server 2012+ avec Java 8
-
-sqljdbc41.jar - Pour Java 7, à remplacer par la 42 si vous avez Java 8+
-
-🎯 Recommandations
-Votre driver PostgreSQL est à jour et supporte bien PostgreSQL 18 . Aucun souci de ce côté.
-
-✅ Ce qui est bon :
-PostgreSQL 42.7.5 est la version recommandée 
-
-Support explicite de PostgreSQL 18 
-
-Correction pour le privilège RULE supprimé dans PostgreSQL 18 
-
-🔄 À considérer :
-Oracle : utilisez ojdbc11.jar pour Oracle 19c/21c/23c 
-
-MySQL : privilégiez mysql-connector-java-8.0.33.jar pour MySQL 8.0+
-
-Oracle 6 : à conserver uniquement si vous utilisez Oracle 11g R2 
-
-Vous pouvez tester votre configuration avec le script bin/check-drivers.php que nous avons ajouté.
-
-
-✅ Drivers à conserver (les plus récents)
-Driver	Version	Compatibilité Java	Compatibilité SGBD	Statut
-postgresql-42.7.5.jar	42.7.5	Java 8+	PostgreSQL 11-18 ✅	✅ À garder
-ojdbc11.jar	21.9.0	Java 8/11+	Oracle 18c-23c ✅	✅ À garder
-mysql-connector-j-8.0.33.jar	8.0.33	Java 8+	MySQL 8.0+ ✅	✅ À garder
-mariadb-java-client-3.5.9.jar	3.5.9	Java 8+	MariaDB 10.6-11.6 ✅	✅ À garder
-mssql-jdbc-13.4.0.jre11.jar	13.4.0	Java 11+	SQL Server 2016-2022 ✅	✅ À garder
-mssql-jdbc-13.4.0.jre8.jar	13.4.0	Java 8	SQL Server 2016-2022 ✅	✅ À garder
-⚠️ Drivers à considérer (anciennes versions)
-Driver	Version	Problème	Action
-mariadb-java-client-2.7.9.jar	2.7.9	Plus ancien que 3.5.9	❌ À supprimer
-mariadb-java-client-2.2.1.jar	2.2.1	Très ancien	❌ À supprimer
-mysql-connector-java-6.0.4.jar	6.0.4	Remplacé par 8.0.33	❌ À supprimer
-mysql-connector-java-5.1.38-bin.jar	5.1.38	Très ancien, pour MySQL 5.x	❌ À supprimer
-ojdbc6.jar	11.2.0.3	Pour Java 6, Oracle 11g	❌ À supprimer
-sqljdbc41.jar	4.1	Pour Java 7	❌ À supprimer
-sqljdbc42.jar	4.2	Pour Java 8, remplacé par 13.4.0	❌ À supprimer
-junixsocket-common-2.0.4.jar	2.0.4	Dépendance de junixsocket-mysql	❌ À supprimer
-junixsocket-mysql-2.0.4.jar	2.0.4	Ancienne version	❌ À supprimer
-
-# 0. symfony composer install 
-
-# 1. Vérifier les drivers
-php bin/check-driver-versions.php
-
-# 2. Faire une simulation du nettoyage
-php bin/cleanup-drivers.php --dry-run
-
-# 3. Nettoyer les drivers obsolètes
-php bin/cleanup-drivers.php
-
-# OU utiliser le script bash
-./bin/cleanup.sh
-
-✅ Clarté - Chaque driver a une raison d'être
-
-✅ Complet - Informations sur Java et version SGBD
-
-✅ Maintenable - Ajout facile de nouveaux drivers
-
-✅ Nettoyage automatisé - Scripts pour supprimer les obsolètes
-
-✅ Traçabilité - Notes sur chaque driver
-
-✅ Compatibilité - Version Java et SGBD documentées
-
-La configuration est maintenant propre, organisée et facile à maintenir ! 🚀
-
-
-1️⃣ D'abord, vérifiez que tout est en place
-bash
-# Vérifier les drivers JDBC
-php bin/check-driver-versions.php
-Vous devriez voir quelque chose comme :
-
-text
-✅ postgresql-42.7.5.jar (configuré)
-✅ ojdbc11.jar (configuré)  
-✅ mysql-connector-j-8.0.33.jar (configuré)
-✅ mariadb-java-client-3.5.9.jar (configuré)
-✅ mssql-jdbc-13.4.0.jre11.jar (configuré)
-✅ mssql-jdbc-13.4.0.jre8.jar (configuré)
-2️⃣ Ensuite, testez l'application en mode interactif
-bash
-# Lancer l'application
-./bin/schemaspy
-Ou si vous êtes à la racine du projet :
-
-bash
+```bash
 php src/bootstrap.php
-3️⃣ Si tout fonctionne, essayez en mode non-interactif (plus rapide pour les tests)
-bash
-# PostgreSQL
-./bin/schemaspy --quiet --db=postgresql --host=localhost --database=ma_base --schema=public --user=mon_user --password=mon_mot_de_passe
+```
 
-# MySQL  
-./bin/schemaspy --quiet --db=mysql --host=localhost --database=ma_base --schema=ma_base --user=root --password=mon_mot_de_passe
+Guide l'utilisateur : choix du SGBD (avec les derniers paramètres utilisés en valeurs par défaut, mémorisés dans `schemaspy.last.json`), host, port, base, schéma, utilisateur, mot de passe (saisie masquée sous Unix), puis récapitulatif et confirmation avant génération.
+
+### Mode non-interactif (CI/CD)
+
+Déclenché dès que `--quiet` est présent ou qu'au moins un paramètre `--xxx=` est fourni.
+
+```bash
+php src/bootstrap.php --quiet \
+  --db=postgresql --host=db.internal --database=ma_base \
+  --schema=public --user=ci_reader --password="$DB_PASSWORD"
+```
+
+### Options disponibles
+
+| Option | Description | Défaut |
+|---|---|---|
+| `--help`, `-h` | Affiche l'aide et quitte | — |
+| `--quiet`, `-q` | Mode silencieux, force le mode non-interactif | désactivé |
+| `--verbose`, `-v` | Affiche les logs `[DEBUG]` | désactivé |
+| `--config=FICHIER` | Fichier de configuration à utiliser | `config/config.json` |
+| `--db=TYPE` | Type de SGBD (clé de `jdbc` dans la config) | `postgresql` |
+| `--host=HOST` | Hôte de la base | — (requis) |
+| `--port=PORT` | Port | port par défaut du SGBD choisi |
+| `--database=NOM` | Nom de la base | — (requis) |
+| `--schema=NOM` | Nom du schéma | — (requis) |
+| `--user=USER` | Utilisateur | — (requis) |
+| `--password=PASS` | Mot de passe | — (requis) |
+| `--vizjs=true\|false` | Forcer viz.js plutôt que Graphviz natif | détection automatique |
+| `--output=DOSSIER` | Nom du dossier de sortie | généré (`{dbType}_{schema}_{timestamp}`) |
+
+En mode non-interactif, `host`, `database`, `schema`, `user` et `password` sont obligatoires ; leur absence fait échouer la validation avec un message listant les champs manquants.
+
+### Exemples par SGBD
+
+```bash
+# PostgreSQL
+php src/bootstrap.php --quiet --db=postgresql --host=localhost --database=demo --schema=public --user=postgres --password=xxx
+
+# MySQL
+php src/bootstrap.php --quiet --db=mysql --host=localhost --database=demo --schema=demo --user=root --password=xxx
 
 # Oracle
-./bin/schemaspy --quiet --db=oracle --host=localhost --database=XE --schema=SYSTEM --user=system --password=mon_mot_de_passe
-📋 Checklist complète avant de lancer
-✅ Vérification des prérequis
-bash
-# 1. Vérifier PHP
-php -v
-# Minimum PHP 7.4
+php src/bootstrap.php --quiet --db=oracle --host=localhost --database=XE --schema=SYSTEM --user=system --password=xxx
 
-# 2. Vérifier Java
-java -version
-# Minimum Java 11
+# Config personnalisée + verbose
+php src/bootstrap.php --verbose --config=config/prod.json --db=postgresql --host=localhost --database=demo --schema=public --user=postgres --password=xxx
+```
 
-# 3. Vérifier les extensions PHP
-php -m | grep -E "pdo|pdo_pgsql|pdo_mysql|pdo_oci"
-# Doit afficher: pdo, pdo_pgsql, pdo_mysql, pdo_oci
+Sur Windows, `bin\schemaspy.bat` fait la même chose (`php src\bootstrap.php %*`), pareil pour `bin/schemaspy.sh` sous Unix (qui lance en plus `composer install --no-dev` si `vendor/` est absent).
 
-# 4. Vérifier SchemaSpy JAR
-ls -la environnement/tools/SchemaSpy7/schemaspy-*.jar
-# Doit afficher: schemaspy-7.0.2.jar
-✅ Structure des dossiers
-bash
-# Vérifier la structure
-tree -L 3
-Vous devriez avoir :
+Le rapport généré est disponible dans `<schemaspy_folder résolu>/<output_folder>/<nom de sortie>/index.html`.
 
-text
-.
-├── bin/
-│   ├── schemaspy
-│   ├── check-driver-versions.php
-│   └── cleanup-drivers.php
-├── config/
-│   └── config.json
-├── jdbc/
-│   ├── postgresql-42.7.5.jar
-│   ├── ojdbc11.jar
-│   ├── mysql-connector-j-8.0.33.jar
-│   ├── mariadb-java-client-3.5.9.jar
-│   ├── mssql-jdbc-13.4.0.jre11.jar
-│   └── mssql-jdbc-13.4.0.jre8.jar
-├── src/
-│   └── ...
-├── environnement/
-│   └── tools/
-│       └── SchemaSpy7/
-│           ├── schemaspy-7.0.2.jar
-│           └── SCHEMA/  # Dossier des rapports
-└── vendor/  # Après composer install
-🎯 Premier lancement recommandé
-Je vous suggère de commencer par PostgreSQL car c'est généralement le plus simple :
+## Gestion des drivers JDBC
 
-bash
-# 1. Mode interactif - PostgreSQL
-./bin/schemaspy
-# Choisissez [1] PostgreSQL
-# Suivez les instructions
+Les JAR JDBC vont dans le dossier `jdbc_folder` défini par la config (`jdbc/` par défaut, à la racine du dépôt). Au démarrage, `DriverManager` :
 
-# 2. Si ça fonctionne, passez en mode non-interactif
-./bin/schemaspy \
-    --quiet \
-    --db=postgresql \
-    --host=localhost \
-    --database=postgres \
-    --schema=public \
-    --user=postgres \
-    --password=votre_mot_de_passe
+- liste les `.jar` présents ;
+- pour chaque SGBD configuré dans `jdbc.*`, vérifie que le driver attendu est présent et que sa version correspond (best-effort, par extraction du numéro de version depuis le nom de fichier) ;
+- signale les drivers présents mais non déclarés dans la config ;
+- en mode `jdbc_validation.strict_mode`, bloque le lancement si un driver obligatoire manque.
 
-# 3. Si vous voulez voir les détails
-./bin/schemaspy \
-    --verbose \
-    --db=postgresql \
-    --host=localhost \
-    --database=postgres \
-    --schema=public \
-    --user=postgres \
-    --password=votre_mot_de_passe
-📊 Que faire après le lancement ?
-Si tout fonctionne ✅
-Le rapport sera généré dans :
+Scripts utilitaires (`php bin/<script>.php [chemin/vers/config.json]`) :
 
-text
-environnement/tools/SchemaSpy7/SCHEMA/{dbType}_{schema}_{timestamp}/
-Ouvrez le fichier index.html dans votre navigateur.
+| Script | Rôle |
+|---|---|
+| `bin/check-drivers.php` | Affiche l'état de validation des drivers (identique au résumé montré au lancement de l'app) |
+| `bin/check-driver-versions.php` | Détaille, driver par driver, la version détectée vs. attendue |
+| `bin/cleanup-drivers.php [--dry-run]` | Supprime les drivers marqués obsolètes dans `config.json` → `obsolete_drivers` ; `--dry-run` simule sans supprimer |
+| `bin/check-jdbc.sh` / `bin/cleanup.sh` | Équivalents shell pour environnements Unix |
 
-Si vous avez des erreurs ❌
-bash
-# 1. Mode verbeux pour voir les détails
-./bin/schemaspy --verbose
+## Tests
 
-# 2. Vérifier les logs
-tail -f /tmp/schemaspy_*.properties.log
+```bash
+composer test              # ou : vendor/bin/phpunit -c tests/phpunit.xml
+composer test-coverage     # rapport HTML dans tests/coverage/
+vendor/bin/phpunit tests/Unit/Core/ConfigTest.php   # un fichier précis
+```
 
-# 3. Tester la connexion séparément
-php -r "
-try {
-    \$pdo = new PDO('pgsql:host=localhost;dbname=postgres', 'postgres', 'password');
-    echo '✅ Connexion OK';
-} catch (\Exception \$e) {
-    echo '❌ Erreur: ' . \$e->getMessage();
-}
-"
-💡 Astuces
-Pour gagner du temps
-Créez un alias dans votre .bashrc ou .zshrc :
+58 tests (unitaires + un test d'intégration sur `Runner`), organisés sous `tests/Unit/` et `tests/Integration/`. Le test `DSNBuilderTest::testGetConnectionOptionsMySQL` est ignoré automatiquement si l'extension `pdo_mysql` n'est pas chargée localement.
 
-bash
-alias schemaspy='./bin/schemaspy --verbose'
-Pour générer automatiquement un rapport
-bash
-#!/bin/bash
-# gen-doc.sh - Génération automatique de documentation
+## Docker
 
-./bin/schemaspy \
-    --quiet \
-    --db=postgresql \
-    --host=localhost \
-    --database=production \
-    --schema=public \
-    --user=admin \
-    --password="$DB_PASSWORD"
-Pour voir l'aide
-bash
-./bin/schemaspy --help
-🎉 Prochaine étape
-Une fois que vous aurez testé avec PostgreSQL, vous pourrez :
+Un `DockerFile` (PHP 8.2-cli + Java 17 + Graphviz) et un `docker-compose.yml` (Postgres/MySQL/Oracle de test + service applicatif) existent dans le dépôt, mais **ne sont pas fonctionnels en l'état** — voir [Limitations connues](#limitations-connues).
 
-Tester avec les autres bases de données (MySQL, Oracle, etc.)
+## Architecture du code
 
-Personnaliser le rapport (logo, favicon, titre)
+```
+src/
+├── Cli/            Point d'entrée CLI : Application (orchestrateur), ArgumentParser,
+│                    InteractiveMode, NonInteractiveMode
+├── Core/            Config (config.json + résolution de chemins), Logger (couleurs ANSI,
+│                    prompts), Environment (détection OS/Java)
+├── Database/        Connection (test PDO), DSNBuilder, DriverManager (validation JDBC)
+├── SchemaSpy/       CommandBuilder (commande java -jar ...), PropertiesGenerator
+│                    (fichier .properties temporaire), Runner (orchestration de l'exécution)
+├── Utils/           FileSystem, OutputNameGenerator, PathFinder, Validator, VersionChecker
+├── Exceptions/       ConfigException, ConnectionException, FileNotFoundException,
+│                    SchemaSpyException, ValidationException
+└── bootstrap.php    Autoload Composer + point d'entrée (`new Application())->run()`)
+```
 
-Automatiser la génération avec un cron job
+Injection de dépendances manuelle (pas de conteneur), assemblée dans `Cli\Application::__construct()`/`initializeServices()`. PHP 8.1+ : propriétés en lecture seule (`readonly`) et promotion de propriétés de constructeur sur les dépendances injectées.
 
-Intégrer dans votre CI/CD
+Le fichier `.properties` généré pour SchemaSpy (qui contient le mot de passe en clair) est écrit dans le dossier temporaire système et systématiquement supprimé après exécution, y compris en cas d'erreur (`finally` dans `Runner::execute()`).
 
-Quelle base de données voulez-vous tester en premier ? Je peux vous donner les commandes spécifiques. 🚀
+## Dépannage
+
+| Symptôme | Piste |
+|---|---|
+| `Dossier JDBC introuvable` / drivers à 0 | Le `jdbc_folder` résolu ne correspond pas à l'endroit où sont vos JAR — voir [Comment l'application trouve ses fichiers](#comment-lapplication-trouve-ses-fichiers) |
+| `Fichier introuvable: .../schemaspy-7.0.2.jar` | Le `schemaspy_folder` résolu ne pointe pas vers un dossier contenant le JAR ; ajustez `config.json` ou placez le JAR au bon endroit |
+| `Échec de la connexion: ...` | Vérifiez l'extension PDO du SGBD ciblé (`php -m`), l'accessibilité réseau de l'hôte, et les identifiants |
+| `Java non trouvé dans le PATH` | Installez un JDK/JRE 11+ et vérifiez `JAVA_HOME` / `PATH`, ou placez-le dans le dossier `java_folder` configuré |
+| Pas de diagrammes / erreurs Graphviz | Sans `dot` détecté, l'app bascule sur viz.js automatiquement — sinon forcez avec `--vizjs=true` |
+
+Le mode `--verbose` affiche les chemins résolus, les commandes exécutées et la trace complète en cas d'erreur inattendue.
+
+## Limitations connues
+
+Points identifiés lors d'une revue de code (2026-07-03), non corrigés à ce stade :
+
+- **`bin/schemaspy` manquant** : `composer.json` (`"bin": ["bin/schemaspy"]`), le `Makefile` (`make run`) et le `DockerFile` (`chmod +x bin/schemaspy`, `ENTRYPOINT`) référencent tous ce fichier, qui n'existe pas dans le dépôt (seuls `bin/schemaspy.sh` et `bin/schemaspy.bat` existent). En conséquence, `make run`, `composer`'s bin-linking, et le build Docker échouent tels quels. Utilisez `php src/bootstrap.php` ou le script `.sh`/`.bat` en attendant.
+- **`docker-compose.yml` invalide** : le fichier contient un titre Markdown et un bloc de code (\`\`\`yaml ... \`\`\`) au lieu de YAML pur — il ne peut pas être parsé par `docker-compose`/`docker compose` en l'état.
+- **Chemin du JAR SchemaSpy potentiellement introuvable hors déploiement type** : sur un simple `git clone`, le dossier `jdbc/` du dépôt est bien détecté (grâce à l'ordre d'initialisation, avant que le base path ne soit appliqué), mais `schemaspy_folder` (résolu par rapport au base path auto-détecté, voir plus haut) suppose l'existence d'une arborescence `SchemaSpy7/` en dehors du dépôt. Sans cette arborescence en place, l'exécution échoue à l'étape de génération avec `Fichier introuvable`.
+- **`composer.lock`** : la contrainte PHP de `composer.json` a été relevée à `>=8.1` sans que `composer.lock` ait pu être régénéré dans l'environnement ayant fait ce changement (pas de binaire `composer` disponible) — lancez `composer update` une fois pour resynchroniser.
+
+## Changelog
+
+Voir [`CHANGELOG.md`](CHANGELOG.md).
