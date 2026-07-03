@@ -1,7 +1,3 @@
-
-## 📄 Fichier `docker-compose.yml` (pour tests multi-SGBD)
-
-```yaml
 version: '3.8'
 
 services:

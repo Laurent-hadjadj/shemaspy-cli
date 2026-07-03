@@ -1,0 +1,11 @@
+#!/usr/bin/env php
+<?php
+/**
+ * SchemaSpy CLI - Point d'entrée (déclaré comme "bin" dans composer.json)
+ *
+ * @author  Laurent HADJADJ - maMoulinette
+ */
+
+declare(strict_types=1);
+
+require __DIR__ . '/../src/bootstrap.php';

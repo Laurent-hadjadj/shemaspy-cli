@@ -212,12 +212,12 @@ Le mode `--verbose` affiche les chemins résolus, les commandes exécutées et l
 
 ## Limitations connues
 
-Points identifiés lors d'une revue de code (2026-07-03), non corrigés à ce stade :
+Points identifiés lors d'une revue de code (2026-07-03) :
 
-- **`bin/schemaspy` manquant** : `composer.json` (`"bin": ["bin/schemaspy"]`), le `Makefile` (`make run`) et le `DockerFile` (`chmod +x bin/schemaspy`, `ENTRYPOINT`) référencent tous ce fichier, qui n'existe pas dans le dépôt (seuls `bin/schemaspy.sh` et `bin/schemaspy.bat` existent). En conséquence, `make run`, `composer`'s bin-linking, et le build Docker échouent tels quels. Utilisez `php src/bootstrap.php` ou le script `.sh`/`.bat` en attendant.
-- **`docker-compose.yml` invalide** : le fichier contient un titre Markdown et un bloc de code (\`\`\`yaml ... \`\`\`) au lieu de YAML pur — il ne peut pas être parsé par `docker-compose`/`docker compose` en l'état.
-- **Chemin du JAR SchemaSpy potentiellement introuvable hors déploiement type** : sur un simple `git clone`, le dossier `jdbc/` du dépôt est bien détecté (grâce à l'ordre d'initialisation, avant que le base path ne soit appliqué), mais `schemaspy_folder` (résolu par rapport au base path auto-détecté, voir plus haut) suppose l'existence d'une arborescence `SchemaSpy7/` en dehors du dépôt. Sans cette arborescence en place, l'exécution échoue à l'étape de génération avec `Fichier introuvable`.
-- **`composer.lock`** : la contrainte PHP de `composer.json` a été relevée à `>=8.1` sans que `composer.lock` ait pu être régénéré dans l'environnement ayant fait ce changement (pas de binaire `composer` disponible) — lancez `composer update` une fois pour resynchroniser.
+- ~~`bin/schemaspy` manquant~~ — **corrigé** : le fichier existe désormais (point d'entrée PHP minimal qui charge `src/bootstrap.php`), `composer`'s bin-linking, `make run` et le build Docker peuvent le référencer normalement.
+- ~~`docker-compose.yml` invalide~~ — **corrigé** : le fichier contenait un titre Markdown et un bloc de code (\`\`\`yaml ... \`\`\`) au lieu de YAML pur ; nettoyé.
+- **Chemin du JAR SchemaSpy potentiellement introuvable hors déploiement type** (non corrigé) : sur un simple `git clone`, le dossier `jdbc/` du dépôt est bien détecté (grâce à l'ordre d'initialisation, avant que le base path ne soit appliqué), mais `schemaspy_folder` (résolu par rapport au base path auto-détecté, voir plus haut) suppose l'existence d'une arborescence `SchemaSpy7/` en dehors du dépôt. Sans cette arborescence en place, l'exécution échoue à l'étape de génération avec `Fichier introuvable`. Correction possible mais qui implique un choix de déploiement (config à adapter selon l'environnement cible) — à traiter à part.
+- **`composer.lock`** (non corrigé) : la contrainte PHP de `composer.json` a été relevée à `>=8.1` sans que `composer.lock` ait pu être régénéré dans l'environnement ayant fait ce changement (pas de binaire `composer` disponible) — lancez `composer update` une fois pour resynchroniser.
 
 ## Changelog
 
