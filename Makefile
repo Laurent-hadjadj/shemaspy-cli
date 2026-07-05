@@ -1,5 +1,5 @@
 # SchemaSpy CLI Makefile
-# 
+#
 # @author  Laurent HADJADJ - maMoulinette
 # @version 3.0.0
 
