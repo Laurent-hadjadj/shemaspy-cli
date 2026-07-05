@@ -30,6 +30,9 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 - ✅ Vérification de compatibilité SchemaSpy/JDK déclarée dans `config.json`
   (`schemaspy.compatibility`) — SchemaSpy 6.x nécessite un JDK 11+, 7.x un
   JDK 17+ ; le JDK et le JAR SchemaSpy restent obligatoires dans tous les cas
+- ✅ Fichier de log (`logs/schemaspy-cli.log`, écrasé à chaque exécution) :
+  trace complète (emojis compris) indépendante du mode quiet/verbose de la
+  console — utile quand le terminal n'affiche pas correctement les emojis
 
 ### Modifié
 
@@ -51,6 +54,8 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
   supprimée (`schemaspy_folder`), cassant la génération de documentation
 - 🐛 La détection de version JDK ne reconnaissait pas le format historique
   JDK 8 (`1.8.0_231`), seulement le format JDK 9+ (`17.0.9`)
+- 🐛 `.gitignore` ignorait `rapport/` alors que le dossier de sortie réel est
+  `report/` (config.json) — le dossier de sortie n'était donc pas exclu
 
 ### Supprimé
 

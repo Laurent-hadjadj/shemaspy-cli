@@ -167,4 +167,47 @@ final class LoggerTest extends TestCase
         fclose($stream);
         $this->assertEquals('secret_password', $result);
     }
+
+    public function testFileLoggingDisabledByDefault(): void
+    {
+        // new Logger() sans chemin explicite : aucune sortie fichier (utilisé par les tests)
+        $this->assertNull($this->logger->getLogFile());
+    }
+
+    public function testFileLoggingCapturesFullTraceEvenInQuietMode(): void
+    {
+        $logFile = sys_get_temp_dir() . '/logger_test_' . uniqid() . '.log';
+        $logger = new Logger(false, $logFile);
+
+        $logger->setQuiet(true);
+        $logger->setVerbose(false);
+
+        ob_start();
+        $logger->info('Message info');
+        $logger->warning('Message warning');
+        $logger->debug('Message debug'); // pas affiché en console (verbose=false), mais tracé en fichier
+        $output = ob_get_clean();
+
+        $this->assertEmpty($output, 'La console doit rester silencieuse en mode quiet');
+
+        $content = file_get_contents($logFile);
+        $this->assertStringContainsString('Message info', $content);
+        $this->assertStringContainsString('Message warning', $content);
+        $this->assertStringContainsString('Message debug', $content);
+
+        unlink($logFile);
+    }
+
+    public function testFileLoggingIsOverwrittenOnConstruction(): void
+    {
+        $logFile = sys_get_temp_dir() . '/logger_test_' . uniqid() . '.log';
+        file_put_contents($logFile, 'contenu de la précédente exécution');
+
+        new Logger(false, $logFile);
+
+        $content = file_get_contents($logFile);
+        $this->assertStringNotContainsString('contenu de la précédente exécution', $content);
+
+        unlink($logFile);
+    }
 }

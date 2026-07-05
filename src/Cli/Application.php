@@ -44,7 +44,7 @@ BANNER;
     public function __construct()
     {
         // Services sans dépendances
-        $this->logger = new Logger();
+        $this->logger = new Logger(false, dirname(__DIR__, 2) . '/logs/schemaspy-cli.log');
         $this->argumentParser = new ArgumentParser();
         $this->environment = new Environment();
         $this->validator = new Validator();
@@ -303,6 +303,11 @@ BANNER;
         if ($company) {
             $this->logger->info("Société: {$company}", 'yellow');
         }
+
+        if ($this->logger->getLogFile() !== null) {
+            $this->logger->info("📝 Log: " . $this->logger->getLogFile(), 'gray');
+        }
+
         $this->logger->blankLine();
     }
 

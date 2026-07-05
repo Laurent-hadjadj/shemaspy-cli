@@ -17,8 +17,11 @@ schemaspy.last.json
 /jar/*.jar
 
 # Rapports générés par SchemaSpy / sorties de test
-./rapport/
+/report/
 /test_output/
+
+# Fichier de log (écrasé à chaque exécution, cf. Logger)
+/logs/
 
 # IDE
 .vscode/

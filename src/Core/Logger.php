@@ -13,6 +13,7 @@ final class Logger
     private bool $quiet = false;
     private bool $verbose = false;
     private bool $colorSupport = false;
+    private ?string $logFile = null;
     private array $colorMap = [
         'red'    => "\033[31m",
         'green'  => "\033[32m",
@@ -23,9 +24,53 @@ final class Logger
         'default'=> "\033[0m",
     ];
 
-    public function __construct(private bool $forceColor = false)
+    /**
+     * @param string|null $logFile Chemin d'un fichier de trace complète (texte brut,
+     *   sans couleurs, indépendant du mode quiet/verbose). Écrasé à chaque exécution.
+     *   Null (défaut) désactive la sortie fichier — c'est le cas dans les tests.
+     */
+    public function __construct(private bool $forceColor = false, ?string $logFile = null)
     {
         $this->colorSupport = $this->forceColor || $this->supportsColor();
+
+        if ($logFile !== null && $this->initLogFile($logFile)) {
+            $this->logFile = $logFile;
+        }
+    }
+
+    /**
+     * Crée le dossier si besoin et écrase le fichier de log (trace de la
+     * dernière exécution uniquement). Échoue silencieusement (pas de dossier
+     * accessible en écriture) : la sortie console reste inchangée.
+     */
+    private function initLogFile(string $logFile): bool
+    {
+        $dir = dirname($logFile);
+        if (!is_dir($dir) && !@mkdir($dir, 0777, true) && !is_dir($dir)) {
+            return false;
+        }
+
+        return @file_put_contents(
+            $logFile,
+            "=== SchemaSpy CLI - " . date('Y-m-d H:i:s') . " ===\n"
+        ) !== false;
+    }
+
+    /**
+     * Écrit une ligne dans le fichier de log, indépendamment du mode
+     * quiet/verbose de la console (le fichier garde toujours la trace complète).
+     */
+    private function writeToFile(string $message): void
+    {
+        if ($this->logFile === null) {
+            return;
+        }
+        @file_put_contents($this->logFile, '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n", FILE_APPEND);
+    }
+
+    public function getLogFile(): ?string
+    {
+        return $this->logFile;
     }
 
     /**
@@ -93,6 +138,7 @@ final class Logger
     // ✅ Méthodes principales
     public function info(string $message, string $color = 'default'): void
     {
+        $this->writeToFile($message);
         if ($this->quiet) {
             return;
         }
@@ -101,21 +147,25 @@ final class Logger
 
     public function error(string $message): void
     {
+        $this->writeToFile("✗ " . $message);
         $this->output("✗ " . $message, 'red');
     }
 
     public function success(string $message): void
     {
+        $this->writeToFile("✅ " . $message);
         $this->output("✅ " . $message, 'green');
     }
 
     public function warning(string $message): void
     {
+        $this->writeToFile("⚠️  " . $message);
         $this->output("⚠️  " . $message, 'yellow');
     }
 
     public function debug(string $message): void
     {
+        $this->writeToFile("[DEBUG] " . $message);
         if (!$this->verbose) {
             return;
         }
@@ -124,6 +174,7 @@ final class Logger
 
     public function progress(string $message): void
     {
+        $this->writeToFile("🔍 " . $message);
         if ($this->quiet) {
             return;
         }
@@ -132,6 +183,9 @@ final class Logger
 
     public function title(string $message): void
     {
+        $this->writeToFile(str_repeat('=', 50));
+        $this->writeToFile($message);
+        $this->writeToFile(str_repeat('=', 50));
         if ($this->quiet) {
             return;
         }
@@ -150,6 +204,7 @@ final class Logger
 
     public function blankLine(): void
     {
+        $this->writeToFile('');
         if ($this->quiet) {
             return;
         }
@@ -158,6 +213,11 @@ final class Logger
 
     public function table(array $headers, array $rows): void
     {
+        $this->writeToFile(implode(' | ', $headers));
+        foreach ($rows as $row) {
+            $this->writeToFile(implode(' | ', array_map(fn($v) => (string) ($v ?? ''), $row)));
+        }
+
         if ($this->quiet) {
             return;
         }
