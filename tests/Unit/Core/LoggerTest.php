@@ -64,31 +64,53 @@ final class LoggerTest extends TestCase
     public function testError(): void
     {
         ob_start();
-        
+
         $this->logger->error('Error message');
-        
+
         $output = ob_get_clean();
-        $this->assertStringContainsString('✗ Error message', $output);
+        // L'emoji est retiré de la console (mal rendu par certains terminaux), le texte reste
+        $this->assertStringContainsString('Error message', $output);
+        $this->assertStringNotContainsString('✗', $output);
     }
 
     public function testSuccess(): void
     {
         ob_start();
-        
+
         $this->logger->success('Success message');
-        
+
         $output = ob_get_clean();
-        $this->assertStringContainsString('✅ Success message', $output);
+        $this->assertStringContainsString('Success message', $output);
+        $this->assertStringNotContainsString('✅', $output);
     }
 
     public function testWarning(): void
     {
         ob_start();
-        
+
         $this->logger->warning('Warning message');
-        
+
         $output = ob_get_clean();
-        $this->assertStringContainsString('⚠️  Warning message', $output);
+        $this->assertStringContainsString('Warning message', $output);
+        $this->assertStringNotContainsString('⚠️', $output);
+    }
+
+    public function testEmojiStrippedFromConsoleButKeptInLogFile(): void
+    {
+        $logFile = sys_get_temp_dir() . '/logger_test_' . uniqid() . '.log';
+        $logger = new Logger(false, $logFile);
+
+        ob_start();
+        $logger->success('Connexion réussie');
+        $output = ob_get_clean();
+
+        $this->assertStringContainsString('Connexion réussie', $output);
+        $this->assertStringNotContainsString('✅', $output, 'La console ne doit plus afficher les emojis');
+
+        $fileContent = file_get_contents($logFile);
+        $this->assertStringContainsString('✅ Connexion réussie', $fileContent, 'Le fichier de log doit garder les emojis');
+
+        unlink($logFile);
     }
 
     public function testDebugInVerboseMode(): void

@@ -260,12 +260,37 @@ final class Logger
             return;
         }
 
+        $message = $this->stripEmoji($message);
+
         if ($this->colorSupport && isset($this->colorMap[$color])) {
             $reset = "\033[0m";
             echo $this->colorMap[$color] . $message . $reset . "\n";
         } else {
             echo $message . "\n";
         }
+    }
+
+    /**
+     * Retire les emojis de la sortie console : de nombreux terminaux (cmd.exe,
+     * PowerShell selon la codepage) les affichent en "?" illisibles. Le fichier
+     * de log (writeToFile) n'appelle pas cette méthode et garde les emojis.
+     */
+    private function stripEmoji(string $message): string
+    {
+        $stripped = preg_replace(
+            '/[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{2B00}-\x{2BFF}\x{2190}-\x{21FF}\x{2139}\x{FE0F}\x{200D}]/u',
+            '',
+            $message
+        );
+
+        if ($stripped === null) {
+            // preg_replace échoue sur une entrée qui n'est pas de l'UTF-8 valide : on garde l'original.
+            return $message;
+        }
+
+        // Un emoji en tête de ligne est presque toujours suivi d'un espace séparateur
+        // ("✅ message") : on ne retire que cet espace résiduel, pas l'indentation volontaire.
+        return $stripped !== $message ? ltrim($stripped, ' ') : $stripped;
     }
 
     /**

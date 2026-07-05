@@ -92,7 +92,10 @@ final class PropertiesGenerator
         $graphviz = $this->pathFinder->detectGraphviz();
 
         if ($graphviz !== null && !$params['useVizJs']) {
-            $properties['schemaspy.gv'] = dirname($graphviz['executable']);
+            // SchemaSpy attend le dossier racine de Graphviz (il ajoute lui-même /bin/dot) :
+            // $graphviz['path'] est déjà cette racine, ne pas reprendre dirname(executable)
+            // qui pointe vers bin/ et provoquerait un chemin .../bin/bin/dot.
+            $properties['schemaspy.gv'] = $graphviz['path'];
             $properties['schemaspy.hq'] = 'true';
         } else {
             $properties['schemaspy.vizjs'] = 'true';
