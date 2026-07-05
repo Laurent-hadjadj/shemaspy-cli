@@ -129,7 +129,12 @@ final class Runner
             $this->logger->success("Connexion réussie");
             return true;
         } catch (\Exception $e) {
-            $this->logger->error("Échec de la connexion: " . $e->getMessage());
+            $this->logger->error(
+                "Impossible de se connecter à {$params['host']}:{$params['port']} ({$params['dbType']}). " .
+                "Vérifiez que le serveur est démarré et accessible."
+            );
+            // Détail technique (SQLSTATE, driver...) : visible en --verbose, toujours dans le fichier de log.
+            $this->logger->debug("Détail: " . $e->getMessage());
             return false;
         }
     }

@@ -37,7 +37,9 @@ final class Connection
 
             return true;
         } catch (\PDOException $e) {
-            throw new ConnectionException("Échec de la connexion: " . $e->getMessage());
+            // Message brut du driver PDO : laissé tel quel, c'est à l'appelant
+            // (Runner::checkConnection) de décider comment le présenter à l'utilisateur.
+            throw new ConnectionException($e->getMessage(), (int) $e->getCode(), $e);
         }
     }
 
