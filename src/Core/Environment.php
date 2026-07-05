@@ -35,7 +35,7 @@ final class Environment
 
     public function getJavaExecutable(string $javaHome): string
     {
-        // 🔥 Normaliser les slashes
+        // Normaliser les slashes
         $javaHome = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $javaHome);
         $executable = $this->isWindows()
             ? "{$javaHome}/bin/java.exe"
@@ -54,7 +54,7 @@ final class Environment
 
     public function getJavaHome(): ?string
     {
-        // 🔥 Utiliser le cache si disponible
+        // Utiliser le cache si disponible
         if ($this->javaHomeCache !== null) {
             return $this->javaHomeCache;
         }
@@ -105,15 +105,26 @@ final class Environment
         return date('d/m/Y H:i:s');
     }
 
-    // 🔥 Méthodes supplémentaires utiles
+    // Méthodes supplémentaires utiles
 
-    public function getJavaVersion(): ?string
+    public function getJavaVersion(?string $javaExe = null): ?string
     {
-        $output = shell_exec('java -version 2>&1');
-        if (preg_match('/version "([0-9.]+)"/', $output, $matches)) {
+        $output = shell_exec(escapeshellarg($javaExe ?? 'java') . ' -version 2>&1');
+
+        // Format historique JDK 8 et antérieur : version "1.8.0_231" (suffixe de build ignoré).
+        // Format JDK 9+ : version "17.0.9" ou "11".
+        if (preg_match('/version "([0-9]+(?:\.[0-9]+)*)(?:_[0-9]+)?"/', (string) $output, $matches)) {
             return $matches[1];
         }
-        if (preg_match('/openjdk version "([0-9.]+)"/', $output, $matches)) {
+
+        return null;
+    }
+
+    public function getGraphvizVersion(?string $dotExe = null): ?string
+    {
+        // Graphviz écrit sa version sur stderr : "dot - graphviz version 2.38.0 (...)"
+        $output = shell_exec(escapeshellarg($dotExe ?? 'dot') . ' -V 2>&1');
+        if (preg_match('/graphviz version ([0-9.]+)/i', (string) $output, $matches)) {
             return $matches[1];
         }
         return null;
@@ -122,6 +133,7 @@ final class Environment
     public function isJavaVersionCompatible(string $minVersion = '11.0'): bool
     {
         $version = $this->getJavaVersion();
+
         if ($version === null) {
             return false;
         }

@@ -52,34 +52,45 @@ final class Runner
         // Préparer l'exécution
         $baseDir = $this->config->getBasePath() ?? getcwd();
         $jarFile = $baseDir . '/' . $this->config->getSchemaspyJar();
-        $outputDir = $baseDir . '/' . $this->config->get('paths.output_folder', 'SCHEMA') . '/' . $params['output'];
+        $outputDir = $baseDir . '/' . $this->config->get('paths.output_folder', 'report') . '/' . $params['output'];
 
         if (!file_exists($jarFile)) {
             throw new SchemaSpyException("Fichier introuvable: {$jarFile}");
         }
 
-        // Trouver Java
-        $javaHome = $this->findJavaHome();
-        $javaExe = $this->findJavaExecutable($javaHome);
+        // Trouver Java (obligatoire : système, tools/ embarqué, puis config.json)
+        $java = $this->pathFinder->detectJava();
+        if ($java === null) {
+            throw new SchemaSpyException(
+                "JDK introuvable (système, dossier embarqué, config.json). " .
+                "Java est obligatoire pour exécuter SchemaSpy."
+            );
+        }
+        $this->checkSchemaspyCompatibility($java['version']);
 
         // Générer le fichier properties
         $propertiesFile = $this->propertiesGenerator->generate($params, $outputDir);
 
         try {
             // Construire la commande (le classpath est géré dans CommandBuilder)
-            $command = $this->commandBuilder->build($javaExe, $jarFile, $propertiesFile, $params);
+            $command = $this->commandBuilder->build($java['executable'], $jarFile, $propertiesFile, $params);
 
             $this->logger->info("\n⚙️  Exécution de SchemaSpy...", 'green');
             $this->logger->info("📁 Sortie: {$outputDir}", 'gray');
 
             if (!$this->logger->isQuiet()) {
+                $this->logger->info(
+                    "☕ JDK détecté ({$java['source']}): " . ($java['version'] ?? 'version inconnue'),
+                    'gray'
+                );
+                $this->logger->info("🗄️  SchemaSpy: " . $this->config->getSchemaspyVersion(), 'gray');
                 $this->logger->info("📝 Fichier de configuration: {$propertiesFile}", 'gray');
                 $this->logger->info("🔗 Driver JDBC: {$params['dbConfig']['driver']}", 'gray');
                 $this->logger->info("📦 Chemin du driver: {$driverPath}", 'gray');
             }
 
             // Exécuter la commande
-            putenv("JAVA_HOME={$javaHome}");
+            putenv("JAVA_HOME={$java['home']}");
             passthru($command, $exitCode);
 
             if ($exitCode === 0) {
@@ -123,34 +134,26 @@ final class Runner
         }
     }
 
-    private function findJavaHome(): string
+    /**
+     * Vérifie que le JDK détecté est compatible avec la version majeure de
+     * SchemaSpy configurée (ex: SchemaSpy 6 -> JDK 11, SchemaSpy 7 -> JDK 17).
+     * La table de correspondance vient de schemaspy.compatibility dans config.json.
+     */
+    private function checkSchemaspyCompatibility(?string $javaVersion): void
     {
-        $javaHome = $this->environment->getJavaHome();
+        $schemaspyMajor = explode('.', $this->config->getSchemaspyVersion())[0];
+        $requiredJavaMajor = $this->config->get("schemaspy.compatibility.{$schemaspyMajor}");
 
-        if ($javaHome !== null) {
-            return $javaHome;
+        if ($requiredJavaMajor === null || $javaVersion === null) {
+            // Pas de règle connue pour cette version, ou version JDK non détectable : on ne bloque pas.
+            return;
         }
 
-        // Vérifier dans le dossier embarqué
-        $javaPath = $this->config->getPath('java_folder');
-        if (is_dir($javaPath)) {
-            return $javaPath;
+        if (!version_compare($javaVersion, $requiredJavaMajor, '>=')) {
+            throw new SchemaSpyException(
+                "SchemaSpy {$schemaspyMajor}.x requiert un JDK {$requiredJavaMajor}+ " .
+                "(JDK détecté: {$javaVersion})."
+            );
         }
-
-        throw new SchemaSpyException(
-            "Java introuvable. Veuillez installer Java ou définir JAVA_HOME."
-        );
-    }
-
-    private function findJavaExecutable(string $javaHome): string
-    {
-        $javaExe = $this->environment->getJavaExecutable($javaHome);
-
-        if (file_exists($javaExe)) {
-            return $javaExe;
-        }
-
-        // Fallback sur java du PATH
-        return 'java';
     }
 }

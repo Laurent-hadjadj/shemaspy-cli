@@ -1,213 +1,219 @@
 <?php
+
 /**
- * Gestion de la configuration
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette
+ *  --------------
+ *  Copyright (c) 2021-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\Core;
 
 use SchemaSpyCli\Exceptions\ConfigException;
 
+/**
+ * [Description Config]
+ * Gestion de la configuration
+*/
 final class Config
 {
-		private array $config = [];
-		private ?string $basePath = null;
-		
-		// 🔥 Chemins par défaut
-		private const DEFAULT_PATHS = [
-				'jdbc_folder' => 'jdbc',
-				'root_folder' => 'environnement',
-				'tools_folder' => 'tools',
-				'schemaspy_folder' => 'SchemaSpy7',
-				'output_folder' => 'SCHEMA',
-				'java_folder' => 'jdk17',
-				'graphviz_folder' => 'graphviz-2.38'
-		];
+    private array $config = [];
+    private ?string $basePath = null;
 
-		public function load(string $file): void
-		{
-				if (!file_exists($file)) {
-						throw new ConfigException("Fichier de configuration introuvable: {$file}");
-				}
+    // 🔥 Chemins par défaut
+    private const DEFAULT_PATHS = [
+        'jdbc_folder' => 'jdbc',
+        'output_folder' => 'report',
+        'java_folder' => 'jdk17',
+        'graphviz_folder' => 'graphviz-2.38'
+    ];
 
-		$content = file_get_contents($file);
+    public function load(string $file): void
+    {
+        if (!file_exists($file)) {
+            throw new ConfigException("Fichier de configuration introuvable: {$file}");
+        }
 
-		// json_decode() retourne null en cas de JSON invalide OR pour la chaîne "null".
-		// On valide donc explicitement avant l'affectation (la propriété est typée array).
-		if (trim($content) === '') {
-			throw new ConfigException("Erreur de parsing du fichier: {$file} (fichier vide)");
-		}
+    $content = file_get_contents($file);
 
-		$decoded = json_decode($content, true);
-		if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
-			throw new ConfigException(
-				"Erreur de parsing du fichier: {$file} (" . json_last_error_msg() . ")"
-			);
-		}
-		if (!is_array($decoded)) {
-			throw new ConfigException("Structure de configuration invalide: {$file} (racine non objet)");
-		}
+    // json_decode() retourne null en cas de JSON invalide OR pour la chaîne "null".
+    // On valide donc explicitement avant l'affectation (la propriété est typée array).
+    if (trim($content) === '') {
+      throw new ConfigException("Erreur de parsing du fichier: {$file} (fichier vide)");
+    }
 
-		$this->config = $decoded;
+    $decoded = json_decode($content, true);
+    if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+      throw new ConfigException(
+        "Erreur de parsing du fichier: {$file} (" . json_last_error_msg() . ")"
+      );
+    }
+    if (!is_array($decoded)) {
+      throw new ConfigException("Structure de configuration invalide: {$file} (racine non objet)");
+    }
 
-				// Vérification de la structure minimale
-				if (!isset($this->config['paths'])) {
-						$this->config['paths'] = [];
-				}
-				
-				if (!isset($this->config['jdbc'])) {
-						throw new ConfigException("Structure de configuration invalide: 'jdbc' manquant");
-				}
-				
-				// Fusionner avec les valeurs par défaut
-				foreach (self::DEFAULT_PATHS as $key => $default) {
-						if (!isset($this->config['paths'][$key])) {
-								$this->config['paths'][$key] = $default;
-						}
-				}
-		}
+    $this->config = $decoded;
 
-		public function get(string $key, mixed $default = null): mixed
-		{
-				$keys = explode('.', $key);
-				$value = $this->config;
+        // Vérification de la structure minimale
+        if (!isset($this->config['paths'])) {
+            $this->config['paths'] = [];
+        }
 
-				foreach ($keys as $k) {
-						if (!isset($value[$k])) {
-								return $default;
-						}
-						$value = $value[$k];
-				}
+        if (!isset($this->config['jdbc'])) {
+            throw new ConfigException("Structure de configuration invalide: 'jdbc' manquant");
+        }
 
-				return $value;
-		}
+        // Fusionner avec les valeurs par défaut
+        foreach (self::DEFAULT_PATHS as $key => $default) {
+            if (!isset($this->config['paths'][$key])) {
+                $this->config['paths'][$key] = $default;
+            }
+        }
+    }
 
-		public function has(string $key): bool
-		{
-				$keys = explode('.', $key);
-				$value = $this->config;
+    public function get(string $key, mixed $default = null): mixed
+    {
+        $keys = explode('.', $key);
+        $value = $this->config;
 
-				foreach ($keys as $k) {
-						if (!isset($value[$k])) {
-								return false;
-						}
-						$value = $value[$k];
-				}
+        foreach ($keys as $k) {
+            if (!isset($value[$k])) {
+                return $default;
+            }
+            $value = $value[$k];
+        }
 
-				return true;
-		}
+        return $value;
+    }
 
-		public function set(string $key, mixed $value): void
-		{
-				$keys = explode('.', $key);
-				$ref = &$this->config;
+    public function has(string $key): bool
+    {
+        $keys = explode('.', $key);
+        $value = $this->config;
 
-				foreach ($keys as $k) {
-						if (!isset($ref[$k]) || !is_array($ref[$k])) {
-								$ref[$k] = [];
-						}
-						$ref = &$ref[$k];
-				}
+        foreach ($keys as $k) {
+            if (!isset($value[$k])) {
+                return false;
+            }
+            $value = $value[$k];
+        }
 
-				$ref = $value;
-		}
+        return true;
+    }
 
-		public function getBasePath(): ?string
-		{
-				return $this->basePath;
-		}
+    public function set(string $key, mixed $value): void
+    {
+        $keys = explode('.', $key);
+        $ref = &$this->config;
 
-		public function setBasePath(string $path): void
-		{
-				$this->basePath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
-		}
+        foreach ($keys as $k) {
+            if (!isset($ref[$k]) || !is_array($ref[$k])) {
+                $ref[$k] = [];
+            }
+            $ref = &$ref[$k];
+        }
 
-		public function getPath(string $key): string
-		{
-				$path = $this->get("paths.{$key}");
-				
-				if ($path === null) {
-						// Utiliser les valeurs par défaut
-						if (isset(self::DEFAULT_PATHS[$key])) {
-								$path = self::DEFAULT_PATHS[$key];
-						} else {
-								throw new ConfigException("Chemin non défini: {$key}");
-						}
-				}
+        $ref = $value;
+    }
 
-				// Normaliser les slashes
-				$path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+    public function getBasePath(): ?string
+    {
+        return $this->basePath;
+    }
 
-				if ($this->basePath !== null) {
-						return $this->basePath . DIRECTORY_SEPARATOR . $path;
-				}
+    public function setBasePath(string $path): void
+    {
+        $this->basePath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
+    }
 
-				return $path;
-		}
+    public function getPath(string $key): string
+    {
+        $path = $this->get("paths.{$key}");
 
-		public function getAbsolutePath(string $path): string
-		{
-				// Si le chemin est déjà absolu
-				if (preg_match('/^[A-Z]:\\\\|^\//', $path)) {
-						return $path;
-				}
-				
-				if ($this->basePath !== null) {
-						return $this->basePath . DIRECTORY_SEPARATOR . $path;
-				}
-				
-				return $path;
-		}
+        if ($path === null) {
+            // Utiliser les valeurs par défaut
+            if (isset(self::DEFAULT_PATHS[$key])) {
+                $path = self::DEFAULT_PATHS[$key];
+            } else {
+                throw new ConfigException("Chemin non défini: {$key}");
+            }
+        }
 
-		public function getDatabases(): array
-		{
-				return $this->get('jdbc', []);
-		}
+        // Normaliser les slashes
+        $path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
 
-		public function getDatabase(string $type): ?array
-		{
-				return $this->get("jdbc.{$type}");
-		}
+        if ($this->basePath !== null) {
+            return $this->basePath . DIRECTORY_SEPARATOR . $path;
+        }
 
-		public function getApplicationName(): string
-		{
-				return $this->get('application.name', 'MaMoulinette');
-		}
+        return $path;
+    }
 
-		public function getApplicationVersion(): string
-		{
-				return $this->get('application.version', '3.0.0');
-		}
+    public function getAbsolutePath(string $path): string
+    {
+        // Si le chemin est déjà absolu
+        if (preg_match('/^[A-Z]:\\\\|^\//', $path)) {
+            return $path;
+        }
 
-		public function getSchemaspyVersion(): string
-		{
-				return $this->get('schemaspy.version', '7.0.2');
-		}
+        if ($this->basePath !== null) {
+            return $this->basePath . DIRECTORY_SEPARATOR . $path;
+        }
 
-		public function getSchemaspyJar(): string
-		{
-				$version = $this->getSchemaspyVersion();
-				$jar = $this->get('schemaspy.jar', "schemaspy-{$version}.jar");
-				return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $jar);
-		}
+        return $path;
+    }
 
-		public function getAll(): array
-		{
-				return $this->config;
-		}
+    public function getDatabases(): array
+    {
+        return $this->get('jdbc', []);
+    }
 
-		public function getValidationConfig(): array
-		{
-				return $this->get('jdbc_validation', [
-						'enabled' => true,
-						'check_checksum' => false,
-						'check_version' => true,
-						'warn_on_extra' => true,
-						'strict_mode' => false,
-						'warn_obsolete' => true,
-						'cleanup_unused' => false
-				]);
-		}
+    public function getDatabase(string $type): ?array
+    {
+        return $this->get("jdbc.{$type}");
+    }
+
+    public function getApplicationName(): string
+    {
+        return $this->get('application.name', 'ShemaSpy-Cli');
+    }
+
+    public function getApplicationVersion(): string
+    {
+        return $this->get('application.version', '1.0.0');
+    }
+
+    public function getSchemaspyVersion(): string
+    {
+        return $this->get('schemaspy.version', '7.0.2');
+    }
+
+    public function getSchemaspyJar(): string
+    {
+        $version = $this->getSchemaspyVersion();
+        $jar = $this->get('schemaspy.jar', "schemaspy-{$version}.jar");
+        return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $jar);
+    }
+
+    public function getAll(): array
+    {
+        return $this->config;
+    }
+
+    public function getValidationConfig(): array
+    {
+        return $this->get('jdbc_validation', [
+            'enabled' => true,
+            'check_checksum' => false,
+            'check_version' => true,
+            'warn_on_extra' => true,
+            'strict_mode' => false,
+            'warn_obsolete' => true,
+            'cleanup_unused' => false
+        ]);
+    }
 }

@@ -9,13 +9,25 @@
     "schemaspy": {
         "version": "7.0.2",
         "jar": "jar/schemaspy-7.0.2.jar",
-        "download_url": "https://github.com/schemaspy/schemaspy/releases/download/v7.0.2/schemaspy-7.0.2.jar"
+        "download_url": "https://github.com/schemaspy/schemaspy/releases/download/v7.0.2/schemaspy-7.0.2.jar",
+        "compatibility": {
+            "6": "11",
+            "7": "17"
+        }
     },
     "paths": {
         "jdbc_folder": "jdbc",
         "output_folder": "report",
         "java_folder": "tools/jdk17",
-        "graphviz_folder": "tools/graphviz-2.38"
+        "graphviz_folder": "tools/graphviz-2.38",
+        "java_home": {
+            "windows": "",
+            "unix": ""
+        },
+        "graphviz_home": {
+            "windows": "",
+            "unix": ""
+        }
     },
     "jdbc": {
         "postgresql": {

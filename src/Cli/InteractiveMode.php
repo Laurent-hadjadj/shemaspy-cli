@@ -178,13 +178,14 @@ final class InteractiveMode
 
     private function detectVizJs(): bool
     {
-        $graphvizPath = $this->pathFinder->findGraphviz();
-        $useVizJs = $graphvizPath === null;
+        $graphviz = $this->pathFinder->detectGraphviz();
+        $useVizJs = $graphviz === null;
 
         if ($useVizJs) {
             $this->logger->info("ℹ️  Graphviz non trouvé, utilisation de viz.js", 'gray');
         } else {
-            $this->logger->info("✅ Graphviz trouvé: {$graphvizPath}", 'green');
+            $version = $graphviz['version'] ?? 'version inconnue';
+            $this->logger->info("✅ Graphviz trouvé ({$graphviz['source']}): {$version}", 'green');
         }
 
         return $useVizJs;

@@ -89,10 +89,10 @@ final class PropertiesGenerator
 
     private function addGraphvizOptions(array &$properties, array $params): void
     {
-        $graphvizPath = $this->pathFinder->findGraphviz();
+        $graphviz = $this->pathFinder->detectGraphviz();
 
-        if ($graphvizPath !== null && !$params['useVizJs']) {
-            $properties['schemaspy.gv'] = dirname($graphvizPath);
+        if ($graphviz !== null && !$params['useVizJs']) {
+            $properties['schemaspy.gv'] = dirname($graphviz['executable']);
             $properties['schemaspy.hq'] = 'true';
         } else {
             $properties['schemaspy.vizjs'] = 'true';

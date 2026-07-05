@@ -8,18 +8,11 @@
 
 namespace SchemaSpyCli\Cli;
 
-use SchemaSpyCli\Core\Config;
-use SchemaSpyCli\Core\Logger;
-use SchemaSpyCli\Core\Environment;
-use SchemaSpyCli\Database\Connection;
-use SchemaSpyCli\Database\DriverManager;
+use SchemaSpyCli\Core\{Config, Logger, Environment};
+use SchemaSpyCli\Database\{Connection, DriverManager};
 use SchemaSpyCli\SchemaSpy\Runner;
-use SchemaSpyCli\Utils\FileSystem;
-use SchemaSpyCli\Utils\PathFinder;
-use SchemaSpyCli\Utils\Validator;
-use SchemaSpyCli\Utils\VersionChecker;
-use SchemaSpyCli\Exceptions\ConfigException;
-use SchemaSpyCli\Exceptions\ConnectionException;
+use SchemaSpyCli\Utils\{FileSystem, PathFinder, Validator, VersionChecker};
+use SchemaSpyCli\Exceptions\{ConfigException, ConnectionException};
 
 final class Application
 {
@@ -37,14 +30,15 @@ final class Application
     private readonly FileSystem $fileSystem;
 
     private const BANNER = <<<'BANNER'
- ______                                             __  __
-|  ____|                          /\             (_)  \/  |
-| |__ _ __ __ _ _ __   ___ ___   /  \   __ _ _ __ _| \  / | ___ _ __
-|  __| '__/ _ | '_ \ / __/ _ \ / /\ \ / _ | '__| | |\/| |/ _ \ '__|
-| |  | | | (_| | | | | (_|  __// ____ \ (_| | |  | | |  | |  __/ |
-|_|  |_|  \__,_|_| |_|\___\___/_/    \_\__, |_|  |_|_|  |_|\___|_|
-                                        __/ |
-                                       |___/
+..   __  __             __  __             _ _            _   _
+    |  \/  | __ _      |  \/  | ___  _   _| (_)_ __   ___| |_| |_ ___
+    | |\/| |/ _` |_____| |\/| |/ _ \| | | | | | '_ \ / _ \ __| __/ _ \
+    | |  | | (_| |_____| |  | | (_) | |_| | | | | | |  __/ |_| ||  __/
+    |_|  |_|\__,_|     |_|  |_|\___/ \__,_|_|_|_| |_|\___|\__|\__\___|
+
+    Laurent HADJADJ
+    https://github.com/Laurent-hadjadj/ma-moulinette
+    © 2015-2026 - CC BY-SA-NC 4.0
 BANNER;
 
     public function __construct()
@@ -204,18 +198,31 @@ BANNER;
             );
         }
 
-        // Vérifier Java
-        if (!$this->environment->isJavaVersionCompatible('11.0')) {
-            $javaVersion = $this->environment->getJavaVersion();
-            if ($javaVersion === null) {
-                $this->logger->warning("Java non trouvé dans le PATH. Veuillez installer Java 11+");
-            } else {
-                $this->logger->warning("Java 11+ requis. Version actuelle: {$javaVersion}");
-            }
+        // Vérifier le JDK (système, tools/ embarqué, puis config.json)
+        $java = $this->pathFinder?->detectJava();
+        $schemaspyMajor = explode('.', $this->config->getSchemaspyVersion())[0];
+        $requiredJavaMajor = $this->config->get("schemaspy.compatibility.{$schemaspyMajor}");
+
+        if ($java === null) {
+            $this->logger->warning("JDK introuvable (système, tools/, config.json). Java est obligatoire pour exécuter SchemaSpy.");
         } else {
-            $javaVersion = $this->environment->getJavaVersion();
-            $this->logger->debug("✅ Java version: {$javaVersion}");
+            $this->logger->info("☕ JDK détecté ({$java['source']}): " . ($java['version'] ?? 'version inconnue'), 'gray');
+            if ($requiredJavaMajor !== null && $java['version'] !== null && !version_compare($java['version'], $requiredJavaMajor, '>=')) {
+                $this->logger->warning(
+                    "SchemaSpy {$schemaspyMajor}.x requiert un JDK {$requiredJavaMajor}+ (JDK détecté: {$java['version']})."
+                );
+            }
         }
+
+        // Vérifier Graphviz (optionnel, repli automatique sur viz.js)
+        $graphviz = $this->pathFinder?->detectGraphviz();
+        if ($graphviz !== null) {
+            $this->logger->info("📊 Graphviz détecté ({$graphviz['source']}): " . ($graphviz['version'] ?? 'version inconnue'), 'gray');
+        } else {
+            $this->logger->debug("Graphviz non trouvé, utilisation de viz.js");
+        }
+
+        $this->logger->info("🗄️  SchemaSpy configuré: " . $this->config->getSchemaspyVersion(), 'gray');
 
         // Vérifier les extensions PHP
         $missingExtensions = $this->versionChecker->checkExtensions();
@@ -230,18 +237,13 @@ BANNER;
     }
 
     /**
-     * Configure le chemin de base
+     * Configure le chemin de base : la racine de l'application elle-même
+     * (jar/, jdbc/, tools/, report/ y sont tous relatifs). Plus de scan de
+     * lecteurs/dossiers externes : l'application est auto-contenue.
      */
     private function setupBasePath(): void
     {
-        $basePath = $this->pathFinder->findEnvironmentPath();
-        if ($basePath === null) {
-            // Utiliser le dossier courant comme fallback
-            $basePath = getcwd();
-            $this->logger->warning(
-                "Dossier '{$this->config->get('paths.root_folder')}' non trouvé, utilisation du dossier courant: {$basePath}"
-            );
-        }
+        $basePath = dirname(__DIR__, 2);
         $this->config->setBasePath($basePath);
         $this->logger->debug("📁 Base path: {$basePath}");
     }
