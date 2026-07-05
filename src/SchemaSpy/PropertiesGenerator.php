@@ -102,16 +102,16 @@ final class PropertiesGenerator
 
     private function addResources(array &$properties): void
     {
-        $schemaspyPath = $this->config->getPath('schemaspy_folder');
+        $baseDir = $this->config->getBasePath() ?? getcwd();
 
         // Logo personnalisé - chercher dans plusieurs dossiers
         $logoPaths = [
-            $schemaspyPath . '/ressources/logo.png',
-            $schemaspyPath . '/ressources/logo.svg',
-            $schemaspyPath . '/resources/logo.png',
-            $schemaspyPath . '/resources/logo.svg',
-            $schemaspyPath . '/logo.png',
-            $schemaspyPath . '/logo.svg',
+            $baseDir . '/ressources/logo.png',
+            $baseDir . '/ressources/logo.svg',
+            $baseDir . '/resources/logo.png',
+            $baseDir . '/resources/logo.svg',
+            $baseDir . '/logo.png',
+            $baseDir . '/logo.svg',
         ];
 
         $logoFound = false;
@@ -133,7 +133,7 @@ final class PropertiesGenerator
         }
 
         // Favicon
-        $faviconPath = $schemaspyPath . '/favicon.ico';
+        $faviconPath = $baseDir . '/favicon.ico';
         if (file_exists($faviconPath)) {
             $properties['schemaspy.favicon'] = $faviconPath;
         }

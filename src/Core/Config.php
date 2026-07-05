@@ -193,14 +193,6 @@ final class Config
 				return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $jar);
 		}
 
-		public function getSchemaspyJarPath(): string
-		{
-				$jarName = $this->getSchemaspyJar();
-				$schemaspyPath = $this->getPath('schemaspy_folder');
-				$fullPath = $schemaspyPath . DIRECTORY_SEPARATOR . $jarName;
-				return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $fullPath);
-		}
-
 		public function getAll(): array
 		{
 				return $this->config;

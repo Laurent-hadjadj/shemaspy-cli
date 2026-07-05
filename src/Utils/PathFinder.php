@@ -105,21 +105,6 @@ final class PathFinder
         return null;
     }
 
-    public function findSchemaSpyJar(): ?string
-    {
-        $schemaspyPath = $this->config->getPath('schemaspy_folder');
-        $jarName = $this->config->getSchemaspyJar();
-        $jarPath = $schemaspyPath . '/' . $jarName;
-
-        if (file_exists($jarPath)) {
-            $this->logger?->debug("✅ SchemaSpy JAR trouvé: {$jarPath}");
-            return $jarPath;
-        }
-
-        $this->logger?->warning("❌ SchemaSpy JAR non trouvé: {$jarPath}");
-        return null;
-    }
-
     public function findFile(string $path, string $filename): ?string
     {
         $fullPath = $path . '/' . $filename;

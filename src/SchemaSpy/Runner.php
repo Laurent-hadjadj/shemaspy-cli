@@ -50,9 +50,9 @@ final class Runner
         }
 
         // Préparer l'exécution
-        $schemaSpyDir = $this->config->getPath('schemaspy_folder');
-        $jarFile = $schemaSpyDir . '/' . $this->config->getSchemaspyJar();
-        $outputDir = $schemaSpyDir . '/' . $this->config->get('paths.output_folder', 'SCHEMA') . '/' . $params['output'];
+        $baseDir = $this->config->getBasePath() ?? getcwd();
+        $jarFile = $baseDir . '/' . $this->config->getSchemaspyJar();
+        $outputDir = $baseDir . '/' . $this->config->get('paths.output_folder', 'SCHEMA') . '/' . $params['output'];
 
         if (!file_exists($jarFile)) {
             throw new SchemaSpyException("Fichier introuvable: {$jarFile}");
