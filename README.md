@@ -1,8 +1,15 @@
 # SchemaSpy CLI
 
+┏┓┏┓┏┓━┏━━┓━┏━━━┓\
+┃┃┃┃┃┃━┗┫┣┛━┃┏━┓┃\
+┃┃┃┃┃┃━━┃┃━━┃┗━┛┃\
+┃┗┛┗┛┃━━┃┃━━┃┏━━┛\
+┗┓┏┓┏┛━┏┫┣┓━┃┃\
+━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.0.0 Release on July 2026 !
+
 Application PHP (`mamoulinette/schemaspy-cli`) qui pilote [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.2 (Java) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
 
-Ce document décrit l'état réel du code au 2026-07-03. Une section [Limitations connues](#limitations-connues) liste les écarts identifiés entre ce qui est censé fonctionner et ce qui fonctionne effectivement aujourd'hui — à lire avant de déployer.
+Ce document décrit l'état du code. Une section [Limitations connues](#limitations-connues) liste les écarts identifiés entre ce qui est censé fonctionner et ce qui fonctionne effectivement aujourd'hui — à lire avant de déployer.
 
 ## Sommaire
 
@@ -21,10 +28,10 @@ Ce document décrit l'état réel du code au 2026-07-03. Une section [Limitation
 ## Prérequis
 
 | Composant | Version minimale | Rôle |
-|---|---|---|
+| --- | --- | --- |
 | PHP | 8.1 (CLI) | Exécute l'application |
 | Extensions PHP | `pdo`, `json`, + le(s) driver(s) PDO du/des SGBD ciblé(s) (`pdo_pgsql`, `pdo_mysql`, `pdo_oci`...) | Test de connexion avant de lancer SchemaSpy |
-| Java (JRE/JDK) | 11 | Exécute le JAR SchemaSpy |
+| Java (JRE/JDK) | 17 | Exécute le JAR SchemaSpy |
 | Composer | — | Installation des dépendances PHP |
 | Graphviz | 2.38+ (optionnel) | Diagrammes de relations en image native ; à défaut, l'application bascule automatiquement sur viz.js (rendu SVG côté navigateur) |
 
@@ -53,16 +60,29 @@ Au démarrage, `PathFinder::findEnvironmentPath()` cherche un dossier `paths.roo
 
 Le dossier trouvé devient le **base path**. Tous les chemins relatifs de `config/config.json` (`schemaspy_folder`, `output_folder`, `java_folder`, `graphviz_folder`) sont ensuite résolus par rapport à ce base path — **pas** par rapport à la racine du dépôt Git. C'est une convention de déploiement : elle suppose qu'à côté du dépôt applicatif existe une arborescence partagée du type :
 
-```
+```plaintext
 <base path>/
-├── SchemaSpy7/
-│   ├── schemaspy-7.0.2.jar
-│   └── SCHEMA/              # rapports générés
-├── jdk17/
-└── graphviz-2.38/
+├── bin/                             # Les commandes cli pour windows | Linux/Mac.
+├── config/                          # Dossier des fichiers de configuration.
+├── jar/                             # Le dossier contenant schemaspy.
+    ├── schemaspy-7.0.2.jar
+├── jdbc/
+    ├── mariadb-java-3.5.9.jar       # Driver pour MariaDB.
+    ├── mssql-jdbc-13.4.0jre8.jar    # Driver pour SQLServer (java8).
+    ├── mssql-jdbc-13.4.0jre11.jar   # Driver pour SQLSeveur (java11).
+    ├── mysql-connector-j-8.0.33.jar # Driver pour MySQL.
+    ├── ojdbc6.jar                   # Driver pour OracleDB.
+    ├── ojdbc11.jar                  # Driver pour OracleDB.
+    ├── postgresql.jar               # Driver pour postgresql.
+├── rapport/                         # Dossier des rapports générés.
+├── ressources                       # Logo personnalisé.
+├── src                              # Source de l'application.
+├── tests                            # Dossier des tests unitaires.
+├── tools                            # Dossier des dépendances windows partagées.
+    ├── jdk17/                       # Optionnel : JDK17 pour windows
+    ├── graphviz-2.38/               # Optionnel : graphviz pour Windows
+└── vendor                           # Dossier des dépendances php partagées.
 ```
-
-Si aucun dossier `environnement/tools` n'est trouvé, l'application se rabat sur le répertoire courant (avec un avertissement).
 
 Le fichier de configuration lui-même est cherché dans cet ordre : le chemin donné par `--config=`, puis `<dossier de bootstrap.php>/../../<chemin>`, puis `<cwd>/<chemin>`, puis `config/config.json` par défaut.
 
@@ -71,7 +91,7 @@ Le fichier de configuration lui-même est cherché dans cet ordre : le chemin do
 `config/config.json` centralise tout. Sections principales :
 
 | Clé | Rôle |
-|---|---|
+| --- | --- |
 | `application` | Nom, version, société, contact affichés dans la bannière |
 | `schemaspy.version` / `schemaspy.jar` | Version et JAR SchemaSpy à utiliser |
 | `paths.*` | Sous-dossiers résolus par rapport au base path (voir ci-dessus) |
@@ -108,7 +128,7 @@ php src/bootstrap.php --quiet \
 ### Options disponibles
 
 | Option | Description | Défaut |
-|---|---|---|
+| --- | --- | --- |
 | `--help`, `-h` | Affiche l'aide et quitte | — |
 | `--quiet`, `-q` | Mode silencieux, force le mode non-interactif | désactivé |
 | `--verbose`, `-v` | Affiche les logs `[DEBUG]` | désactivé |
@@ -157,7 +177,7 @@ Les JAR JDBC vont dans le dossier `jdbc_folder` défini par la config (`jdbc/` p
 Scripts utilitaires (`php bin/<script>.php [chemin/vers/config.json]`) :
 
 | Script | Rôle |
-|---|---|
+| --- | --- |
 | `bin/check-drivers.php` | Affiche l'état de validation des drivers (identique au résumé montré au lancement de l'app) |
 | `bin/check-driver-versions.php` | Détaille, driver par driver, la version détectée vs. attendue |
 | `bin/cleanup-drivers.php [--dry-run]` | Supprime les drivers marqués obsolètes dans `config.json` → `obsolete_drivers` ; `--dry-run` simule sans supprimer |
@@ -179,19 +199,19 @@ Un `DockerFile` (PHP 8.2-cli + Java 17 + Graphviz) et un `docker-compose.yml` (P
 
 ## Architecture du code
 
-```
+```plaintext
 src/
-├── Cli/            Point d'entrée CLI : Application (orchestrateur), ArgumentParser,
-│                    InteractiveMode, NonInteractiveMode
-├── Core/            Config (config.json + résolution de chemins), Logger (couleurs ANSI,
+├── Cli/             # Point d'entrée CLI : Application (orchestrateur), ArgumentParser,
+│                      InteractiveMode, NonInteractiveMode
+├── Core/            # Config (config.json + résolution de chemins), Logger (couleurs ANSI,
 │                    prompts), Environment (détection OS/Java)
-├── Database/        Connection (test PDO), DSNBuilder, DriverManager (validation JDBC)
-├── SchemaSpy/       CommandBuilder (commande java -jar ...), PropertiesGenerator
-│                    (fichier .properties temporaire), Runner (orchestration de l'exécution)
-├── Utils/           FileSystem, OutputNameGenerator, PathFinder, Validator, VersionChecker
-├── Exceptions/       ConfigException, ConnectionException, FileNotFoundException,
-│                    SchemaSpyException, ValidationException
-└── bootstrap.php    Autoload Composer + point d'entrée (`new Application())->run()`)
+├── Database/        # Connection (test PDO), DSNBuilder, DriverManager (validation JDBC)
+├── SchemaSpy/       # CommandBuilder (commande java -jar ...), PropertiesGenerator
+│                      (fichier .properties temporaire), Runner (orchestration de l'exécution)
+├── Utils/           # FileSystem, OutputNameGenerator, PathFinder, Validator, VersionChecker
+├── Exceptions/        ConfigException, ConnectionException, FileNotFoundException,
+│                      SchemaSpyException, ValidationException
+└── bootstrap.php    # Autoload Composer + point d'entrée (`new Application())->run()`)
 ```
 
 Injection de dépendances manuelle (pas de conteneur), assemblée dans `Cli\Application::__construct()`/`initializeServices()`. PHP 8.1+ : propriétés en lecture seule (`readonly`) et promotion de propriétés de constructeur sur les dépendances injectées.
@@ -201,7 +221,7 @@ Le fichier `.properties` généré pour SchemaSpy (qui contient le mot de passe 
 ## Dépannage
 
 | Symptôme | Piste |
-|---|---|
+| --- | --- |
 | `Dossier JDBC introuvable` / drivers à 0 | Le `jdbc_folder` résolu ne correspond pas à l'endroit où sont vos JAR — voir [Comment l'application trouve ses fichiers](#comment-lapplication-trouve-ses-fichiers) |
 | `Fichier introuvable: .../schemaspy-7.0.2.jar` | Le `schemaspy_folder` résolu ne pointe pas vers un dossier contenant le JAR ; ajustez `config.json` ou placez le JAR au bon endroit |
 | `Échec de la connexion: ...` | Vérifiez l'extension PDO du SGBD ciblé (`php -m`), l'accessibilité réseau de l'hôte, et les identifiants |
@@ -214,8 +234,6 @@ Le mode `--verbose` affiche les chemins résolus, les commandes exécutées et l
 
 Points identifiés lors d'une revue de code (2026-07-03) :
 
-- ~~`bin/schemaspy` manquant~~ — **corrigé** : le fichier existe désormais (point d'entrée PHP minimal qui charge `src/bootstrap.php`), `composer`'s bin-linking, `make run` et le build Docker peuvent le référencer normalement.
-- ~~`docker-compose.yml` invalide~~ — **corrigé** : le fichier contenait un titre Markdown et un bloc de code (\`\`\`yaml ... \`\`\`) au lieu de YAML pur ; nettoyé.
 - **Chemin du JAR SchemaSpy potentiellement introuvable hors déploiement type** (non corrigé) : sur un simple `git clone`, le dossier `jdbc/` du dépôt est bien détecté (grâce à l'ordre d'initialisation, avant que le base path ne soit appliqué), mais `schemaspy_folder` (résolu par rapport au base path auto-détecté, voir plus haut) suppose l'existence d'une arborescence `SchemaSpy7/` en dehors du dépôt. Sans cette arborescence en place, l'exécution échoue à l'étape de génération avec `Fichier introuvable`. Correction possible mais qui implique un choix de déploiement (config à adapter selon l'environnement cible) — à traiter à part.
 - **`composer.lock`** (non corrigé) : la contrainte PHP de `composer.json` a été relevée à `>=8.1` sans que `composer.lock` ait pu être régénéré dans l'environnement ayant fait ce changement (pas de binaire `composer` disponible) — lancez `composer update` une fois pour resynchroniser.
 
