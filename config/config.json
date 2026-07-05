@@ -1,10 +1,10 @@
 {
     "application": {
-        "name": "MaMoulinette - Documentation BDD",
-        "version": "3.0.0",
-        "company": "MaMoulinette",
+        "name": "ShemaSpy-Cli - Documentation BDD",
+        "version": "1.0.0",
+        "company": "Ma-Moulinette",
         "contact": "laurent_h@me.com",
-        "copyright": "© MaMoulinette - 2026"
+        "copyright": "© Ma-Moulinette - CC-BY-NC-SA 4.0 - 2026"
     },
     "schemaspy": {
         "version": "7.0.2",
@@ -12,13 +12,10 @@
         "download_url": "https://github.com/schemaspy/schemaspy/releases/download/v7.0.2/schemaspy-7.0.2.jar"
     },
     "paths": {
-        "root_folder": "environnement/tools",
-        "tools_folder": "tools",
-        "schemaspy_folder": "SchemaSpy7",
         "jdbc_folder": "jdbc",
-        "output_folder": "SCHEMA",
-        "java_folder": "jdk17",
-        "graphviz_folder": "graphviz-2.38"
+        "output_folder": "report",
+        "java_folder": "tools/jdk17",
+        "graphviz_folder": "tools/graphviz-2.38"
     },
     "jdbc": {
         "postgresql": {
@@ -155,7 +152,7 @@
         "serverTimezone": "Europe/Paris"
     },
     "docs": {
-        "url": "https://wiki.franceagrimer.fr/documentation",
+        "url": "https://github.fr/shemaspy-cli",
         "readme": "README.md"
     }
 }
