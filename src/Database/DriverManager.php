@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Gestion des drivers JDBC
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\Database;
@@ -12,6 +17,10 @@ use SchemaSpyCli\Core\Config;
 use SchemaSpyCli\Core\Logger;
 use SchemaSpyCli\Exceptions\FileNotFoundException;
 
+/**
+ * [Description DriverManager]
+ * Gestion des drivers JDBC
+ */
 final class DriverManager
 {
     private array $drivers = [];
@@ -30,6 +39,15 @@ final class DriverManager
         $this->validateDrivers();
     }
 
+    /**
+     * [Description for loadDrivers]
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:44:04 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function loadDrivers(): void
     {
         $jdbcPath = $this->config->getPath('jdbc_folder');
@@ -59,17 +77,27 @@ final class DriverManager
         }
     }
 
+    /**
+     * [Description for validateDrivers]
+     *
+     * @return array
+     *
+     * Created at: 04/10/2026 22:44:13 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function validateDrivers(): array
     {
         $this->validationResults = [];
         $jdbcConfig = $this->config->get('jdbc', []);
-        $validationConfig = $this->config->get('jdbc_validation', [
+        // Les clés absentes de config.json retombent sur ces valeurs par défaut
+        $validationConfig = array_merge([
             'enabled' => true,
             'check_checksum' => false,
             'check_version' => true,
             'warn_on_extra' => true,
             'strict_mode' => false,
-        ]);
+        ], $this->config->get('jdbc_validation', []));
 
         if (!$validationConfig['enabled']) {
             return $this->validationResults;
@@ -139,18 +167,32 @@ final class DriverManager
         return $this->validationResults;
     }
 
+    /**
+     * [Description for checkVersion]
+     *
+     * @param string $driverName
+     * @param string $expectedVersion
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:44:21 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function checkVersion(string $driverName, string $expectedVersion): bool
     {
         // Extraction de la version depuis le nom du fichier
+        // Numéro de version = chiffres séparés par des points (sans point final)
         $versionPatterns = [
-            '/postgresql-([0-9.]+)\.jar/',
-            '/mysql-connector-java-([0-9.]+)/',
-            '/mariadb-java-client-([0-9.]+)/',
-            '/ojdbc([0-9]+)\.jar/',
-            '/sqljdbc([0-9]+)\.jar/',
-            '/junixsocket-mysql-([0-9.]+)/',
+            '/postgresql-(\d+(?:\.\d+)*)\.jar/',
+            '/mysql-connector-(?:java|j)-(\d+(?:\.\d+)*)\.jar/',
+            '/mariadb-java-client-(\d+(?:\.\d+)*)\.jar/',
+            '/mssql-jdbc-(\d+(?:\.\d+)*)\.jre\d+\.jar/',
+            '/ojdbc\d+-(\d+(?:\.\d+)*)\.jar/',
+            '/ojdbc(\d+)\.jar/',
+            '/sqljdbc(\d+)\.jar/',
+            '/junixsocket-mysql-(\d+(?:\.\d+)*)/',
         ];
-
         $foundVersion = null;
         foreach ($versionPatterns as $pattern) {
             if (preg_match($pattern, $driverName, $matches)) {
@@ -167,6 +209,18 @@ final class DriverManager
         return $foundVersion === $expectedVersion;
     }
 
+    /**
+     * [Description for checkChecksum]
+     *
+     * @param string $driverName
+     * @param string $expectedChecksum
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:44:28 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function checkChecksum(string $driverName, string $expectedChecksum): bool
     {
         if (!isset($this->drivers[$driverName])) {
@@ -194,6 +248,17 @@ final class DriverManager
         return false;
     }
 
+    /**
+     * [Description for getDriver]
+     *
+     * @param string $dbType
+     *
+     * @return string|null
+     *
+     * Created at: 04/10/2026 22:44:31 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDriver(string $dbType): ?string
     {
         $dbConfig = $this->config->getDatabase($dbType);
@@ -215,6 +280,17 @@ final class DriverManager
         return $driverName;
     }
 
+    /**
+     * [Description for getDriverPath]
+     *
+     * @param string $dbType
+     *
+     * @return string|null
+     *
+     * Created at: 04/10/2026 22:44:34 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDriverPath(string $dbType): ?string
     {
         $driver = $this->getDriver($dbType);
@@ -225,12 +301,32 @@ final class DriverManager
         return $this->drivers[$driver]['path'] ?? null;
     }
 
+    /**
+     * [Description for getDriverClass]
+     *
+     * @param string $dbType
+     *
+     * @return string|null
+     *
+     * Created at: 04/10/2026 22:44:41 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDriverClass(string $dbType): ?string
     {
         $dbConfig = $this->config->getDatabase($dbType);
         return $dbConfig['class'] ?? null;
     }
 
+    /**
+     * [Description for getClasspath]
+     *
+     * @return string
+     *
+     * Created at: 04/10/2026 22:44:44 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getClasspath(): string
     {
         $jdbcPath = $this->config->getPath('jdbc_folder');
@@ -238,21 +334,59 @@ final class DriverManager
         return $jdbcPath . '/*';
     }
 
+    /**
+     * [Description for hasDriver]
+     *
+     * @param string $dbType
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:44:47 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function hasDriver(string $dbType): bool
     {
         return $this->getDriver($dbType) !== null;
     }
 
+    /**
+     * [Description for getAvailableDrivers]
+     *
+     * @return array
+     *
+     * Created at: 04/10/2026 22:44:51 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getAvailableDrivers(): array
     {
         return array_keys($this->drivers);
     }
 
+    /**
+     * [Description for getValidationResults]
+     *
+     * @return array
+     *
+     * Created at: 04/10/2026 22:44:53 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getValidationResults(): array
     {
         return $this->validationResults;
     }
 
+    /**
+     * [Description for getValidationSummary]
+     *
+     * @return string
+     *
+     * Created at: 04/10/2026 22:44:55 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getValidationSummary(): string
     {
         $summary = [];
@@ -276,11 +410,29 @@ final class DriverManager
         return $status . "\n" . implode("\n", $summary);
     }
 
+    /**
+     * [Description for isJdbcDirectoryEmpty]
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:44:59 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function isJdbcDirectoryEmpty(): bool
     {
         return empty($this->drivers);
     }
 
+    /**
+     * [Description for getMissingDrivers]
+     *
+     * @return array
+     *
+     * Created at: 04/10/2026 22:45:01 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getMissingDrivers(): array
     {
         $missing = [];
@@ -303,6 +455,17 @@ final class DriverManager
         return $missing;
     }
 
+    /**
+     * [Description for getDriverInfo]
+     *
+     * @param string $driverName
+     *
+     * @return array|null
+     *
+     * Created at: 04/10/2026 22:45:05 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDriverInfo(string $driverName): ?array
     {
         return $this->drivers[$driverName] ?? null;

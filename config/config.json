@@ -2,14 +2,16 @@
     "application": {
         "name": "ShemaSpy-Cli - Documentation BDD",
         "version": "1.0.0",
+        "date": "2026/09/25",
         "company": "Ma-Moulinette",
         "contact": "laurent_h@me.com",
         "copyright": "© Ma-Moulinette - CC-BY-NC-SA 4.0 - 2026"
     },
     "schemaspy": {
-        "version": "7.0.2",
-        "jar": "jar/schemaspy-7.0.2.jar",
-        "download_url": "https://github.com/schemaspy/schemaspy/releases/download/v7.0.2/schemaspy-7.0.2.jar",
+        "version": "7.0.3-lh.2",
+        "jar": "jar/schemaspy-7.0.3-lh.2.jar",
+        "download_url": "",
+        "markdown_supported": true,
         "compatibility": {
             "6": "11",
             "7": "17"
@@ -19,7 +21,8 @@
         "jdbc_folder": "jdbc",
         "output_folder": "report",
         "java_folder": "tools/jdk17",
-        "graphviz_folder": "tools/graphviz-2.38",
+        "graphviz_folder": "tools/graphviz-16.1.0",
+        "download_url": "https://graphviz.org/download/",
         "java_home": {
             "windows": "",
             "unix": ""
@@ -33,72 +36,72 @@
         "postgresql": {
             "type": "pgsql11",
             "port": 5432,
-            "driver": "postgresql-42.7.5.jar",
-            "version": "42.7.5",
+            "driver": "postgresql-42.7.13.jar",
+            "version": "42.7.13",
             "java_version": "8+",
             "db_version": "11-18",
             "status": "stable",
-            "download_url": "https://jdbc.postgresql.org/download/postgresql-42.7.5.jar",
+            "download_url": "https://jdbc.postgresql.org/download/postgresql-42.7.13.jar",
             "class": "org.postgresql.Driver",
             "notes": "Support PostgreSQL 18, correction RULE privilege"
         },
         "oracle": {
             "type": "orathin",
             "port": 1521,
-            "driver": "ojdbc11.jar",
-            "version": "21.9.0.0",
+            "driver": "ojdbc11-23.26.3.0.0.jar",
+            "version": "23.26.3.0.0",
             "java_version": "8/11+",
             "db_version": "19c-23c",
             "status": "stable",
-            "download_url": "https://download.oracle.com/otn-pub/otn_software/jdbc/233/ojdbc11.jar",
+            "download_url": "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/23.26.3.0.0/ojdbc11-23.26.3.0.0.jar",
             "class": "oracle.jdbc.OracleDriver",
             "notes": "Support Oracle 19c, 21c, 23c"
         },
         "mysql": {
             "type": "mysql",
             "port": 3306,
-            "driver": "mysql-connector-j-8.0.33.jar",
-            "version": "8.0.33",
+            "driver": "mysql-connector-j-26.7.0.jar",
+            "version": "26.7.0",
             "java_version": "8+",
             "db_version": "8.0+",
             "status": "stable",
-            "download_url": "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar",
+            "download_url": "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/26.7.0/mysql-connector-j-26.7.0.jar",
             "class": "com.mysql.cj.jdbc.Driver",
-            "notes": "MySQL 8.0+, version recommandée"
+            "notes": "MySQL 8.0+ (Connector/J 26.x, Java 8+)"
         },
         "mariadb": {
             "type": "mysql",
             "port": 3306,
-            "driver": "mariadb-java-client-3.5.9.jar",
-            "version": "3.5.9",
+            "driver": "mariadb-java-client-3.5.10.jar",
+            "version": "3.5.10",
             "java_version": "8+",
             "db_version": "10.6-11.6",
             "status": "stable",
-            "download_url": "https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.5.9/mariadb-java-client-3.5.9.jar",
+            "download_url": "https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.5.10/mariadb-java-client-3.5.10.jar",
             "class": "org.mariadb.jdbc.Driver",
             "notes": "Support MariaDB 10.6+, 11.x"
         },
         "sqlserver_jre8": {
             "type": "sqlserver",
             "port": 1433,
-            "driver": "mssql-jdbc-13.4.0.jre8.jar",
-            "version": "13.4.0",
+            "driver": "mssql-jdbc-13.6.0.jre8.jar",
+            "version": "13.6.0",
             "java_version": "8",
             "db_version": "2016-2022",
             "status": "stable",
-            "download_url": "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/13.4.0/mssql-jdbc-13.4.0.jre8.jar",
+            "download_url": "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/13.6.0/mssql-jdbc-13.6.0.jre8.jar",
             "class": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
             "notes": "SQL Server 2016, 2017, 2019, 2022 avec Java 8"
         },
         "sqlserver_jre11": {
             "type": "sqlserver",
             "port": 1433,
-            "driver": "mssql-jdbc-13.4.0.jre11.jar",
-            "version": "13.4.0",
+            "driver": "mssql-jdbc-13.6.0.jre11.jar",
+            "version": "13.6.0",
             "java_version": "11+",
             "db_version": "2016-2022",
             "status": "stable",
-            "download_url": "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/13.4.0/mssql-jdbc-13.4.0.jre11.jar",
+            "download_url": "https://repo1.maven.org/maven2/com/microsoft/sqlserver/mssql-jdbc/13.6.0/mssql-jdbc-13.6.0.jre11.jar",
             "class": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
             "notes": "SQL Server 2016, 2017, 2019, 2022 avec Java 11+"
         }
@@ -115,17 +118,17 @@
     "obsolete_drivers": [
         {
             "pattern": "mariadb-java-client-2.*",
-            "reason": "Remplacé par mariadb-java-client-3.5.9.jar",
+            "reason": "Remplacé par mariadb-java-client-3.5.10.jar",
             "action": "delete"
         },
         {
             "pattern": "mysql-connector-java-5.*",
-            "reason": "Remplacé par mysql-connector-j-8.0.33.jar",
+            "reason": "Remplacé par mysql-connector-j-26.7.0.jar",
             "action": "delete"
         },
         {
             "pattern": "mysql-connector-java-6.*",
-            "reason": "Remplacé par mysql-connector-j-8.0.33.jar",
+            "reason": "Remplacé par mysql-connector-j-26.7.0.jar",
             "action": "delete"
         },
         {
@@ -135,12 +138,12 @@
         },
         {
             "pattern": "sqljdbc41.jar",
-            "reason": "Pour Java 7, remplacer par mssql-jdbc-13.4.0.jre8.jar",
+            "reason": "Pour Java 7, remplacer par mssql-jdbc-13.6.0.jre8.jar",
             "action": "warn"
         },
         {
             "pattern": "sqljdbc42.jar",
-            "reason": "Remplacé par mssql-jdbc-13.4.0.jre8.jar",
+            "reason": "Remplacé par mssql-jdbc-13.6.0.jre8.jar",
             "action": "delete"
         },
         {
@@ -154,17 +157,27 @@
         "use_vizjs": false,
         "font": "Arial",
         "image_format": "svg",
+        "renderer": "",
         "noads": true,
         "nologo": false,
         "timeout": 5,
         "output_name_format": "{dbType}_{schema}_{timestamp}"
+    },
+    "generation": {
+        "engine": "auto",
+        "html": true,
+        "markdown": false,
+        "orphans": true,
+        "views": true,
+        "rows": true,
+        "implied": true
     },
     "connprops": {
         "useSSL": "false",
         "serverTimezone": "Europe/Paris"
     },
     "docs": {
-        "url": "https://github.fr/shemaspy-cli",
+        "url": "https://github.com/Laurent-hadjadj/shemaspy-cli",
         "readme": "README.md"
     }
 }
