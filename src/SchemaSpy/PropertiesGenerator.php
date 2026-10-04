@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Génération du fichier properties pour SchemaSpy
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\SchemaSpy;
@@ -14,6 +19,10 @@ use SchemaSpyCli\Core\Environment;
 use SchemaSpyCli\Database\DriverManager;
 use SchemaSpyCli\Utils\PathFinder;
 
+/**
+ * [Description PropertiesGenerator]
+ * Génération du fichier properties pour SchemaSpy
+ */
 final class PropertiesGenerator
 {
     private PathFinder $pathFinder;
@@ -22,9 +31,10 @@ final class PropertiesGenerator
         private readonly Config $config,
         private readonly Environment $environment,
         private readonly Logger $logger,
-        private readonly DriverManager $driverManager
+        private readonly DriverManager $driverManager,
+        ?PathFinder $pathFinder = null
     ) {
-        $this->pathFinder = new PathFinder($config, null);
+        $this->pathFinder = $pathFinder ?? new PathFinder($config, null);
     }
 
     public function generate(array $params, string $outputDir): string
@@ -65,6 +75,9 @@ final class PropertiesGenerator
             'schemaspy.p' => $params['password'],
             'schemaspy.o' => $outputDir,
 
+            // catalogue parfois requis quand l'auto détection ne fonctionne pas sur Oracle.
+            'schemaspy.cat' => $params['schema'],
+
             // Titre et description (SchemaSpy 7)
             'schemaspy.title' => $title,
             'schemaspy.desc' => $desc,
@@ -77,6 +90,11 @@ final class PropertiesGenerator
 
         // Ajouter Graphviz ou viz.js
         $this->addGraphvizOptions($properties, $params);
+
+        // Options de génération (HTML/Markdown, orphelines, filtres...)
+        if (isset($params['options'])) {
+            $properties = array_merge($properties, $params['options']->toProperties());
+        }
 
         // Ajouter favicon et logo
         $this->addResources($properties);
@@ -96,11 +114,22 @@ final class PropertiesGenerator
             // $graphviz['path'] est déjà cette racine, ne pas reprendre dirname(executable)
             // qui pointe vers bin/ et provoquerait un chemin .../bin/bin/dot.
             $properties['schemaspy.gv'] = $graphviz['path'];
-            $properties['schemaspy.hq'] = 'true';
-        } else {
-            $properties['schemaspy.vizjs'] = 'true';
             $properties['schemaspy.imageformat'] = $this->config->get('defaults.image_format', 'svg');
+
+            // Renderer facultatif (ex: "cairo", "gd"). Vide par défaut : les builds récents de
+            // Graphviz (>= 15, Windows) n'embarquent plus le plugin cairo.
+            $renderer = (string) $this->config->get('defaults.renderer', '');
+            if ($renderer !== '') {
+                $properties['schemaspy.renderer'] = ':' . ltrim($renderer, ':');
+            }
+            return;
         }
+
+        if ($graphviz === null && ($params['options']->engine ?? 'auto') === 'graphviz') {
+            $this->logger->warning("Graphviz demandé (--engine=graphviz) mais introuvable : repli sur viz.js");
+        }
+        $properties['schemaspy.vizjs'] = 'true';
+        $properties['schemaspy.imageformat'] = $this->config->get('defaults.image_format', 'svg');
     }
 
     private function addResources(array &$properties): void
