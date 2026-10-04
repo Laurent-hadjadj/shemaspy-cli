@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Exécution de SchemaSpy
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\SchemaSpy;
@@ -13,9 +18,13 @@ use SchemaSpyCli\Core\Logger;
 use SchemaSpyCli\Core\Environment;
 use SchemaSpyCli\Database\Connection;
 use SchemaSpyCli\Database\DriverManager;
-use SchemaSpyCli\Utils\PathFinder;
+use SchemaSpyCli\Utils\{PathFinder, ProcessRunner};
 use SchemaSpyCli\Exceptions\SchemaSpyException;
 
+/**
+ * [Description Runner]
+ * Exécution de SchemaSpy : vérifie la connexion, génère le fichier properties, lance le JAR et relaie sa sortie.
+ */
 final class Runner
 {
     private PropertiesGenerator $propertiesGenerator;
@@ -26,12 +35,24 @@ final class Runner
         private readonly Logger $logger,
         private readonly Environment $environment,
         private readonly PathFinder $pathFinder,
-        private readonly DriverManager $driverManager
+        private readonly DriverManager $driverManager,
+        private readonly ProcessRunner $processRunner = new ProcessRunner()
     ) {
-        $this->propertiesGenerator = new PropertiesGenerator($config, $environment, $logger, $driverManager);
+        $this->propertiesGenerator = new PropertiesGenerator($config, $environment, $logger, $driverManager, $pathFinder);
         $this->commandBuilder = new CommandBuilder($config, $environment, $logger, $driverManager);
     }
 
+    /**
+     * [Description for execute]
+     *
+     * @param array $params
+     *
+     * @return int
+     *
+     * Created at: 04/10/2026 22:51:09 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function execute(array $params): int
     {
         // Vérifier que le driver existe
@@ -75,7 +96,8 @@ final class Runner
             // Construire la commande (le classpath est géré dans CommandBuilder)
             $command = $this->commandBuilder->build($java['executable'], $jarFile, $propertiesFile, $params);
 
-            $this->logger->info("\n⚙️  Exécution de SchemaSpy...", 'green');
+            $this->logger->blankLine();
+            $this->logger->info("⚙️ Exécution de SchemaSpy...", 'green');
             $this->logger->info("📁 Sortie: {$outputDir}", 'gray');
 
             if (!$this->logger->isQuiet()) {
@@ -91,13 +113,21 @@ final class Runner
 
             // Exécuter la commande
             putenv("JAVA_HOME={$java['home']}");
-            passthru($command, $exitCode);
+            $exitCode = $this->runSchemaSpy($command);
 
             if ($exitCode === 0) {
+                $this->logger->blankLine();
                 $this->logger->success("Documentation générée avec succès!");
-                $this->logger->info("🌐 Ouvrir: {$outputDir}/index.html", 'cyan');
+                $options = $params['options'] ?? null;
+                if ($options === null || $options->html) {
+                    $this->logger->info("🌐 Ouvrir: {$outputDir}/index.html", 'cyan');
+                }
+                if ($options !== null && $options->markdown) {
+                    $this->logger->info("📝 Markdown: {$outputDir}/markdown/", 'cyan');
+                }
             } else {
-                $this->logger->warning("SchemaSpy a retourné le code: {$exitCode}");
+                $this->logger->blankLine();
+                $this->logger->error("SchemaSpy a retourné le code: {$exitCode}");
             }
 
             return $exitCode;
@@ -109,7 +139,55 @@ final class Runner
     }
 
     /**
+     * [Description for runSchemaSpy]
+     * Lance SchemaSpy en relayant sa sortie. Hors --verbose, le bruit répétitif des
+     * avertissements Graphviz est masqué et résumé (trace complète dans le fichier de log).
+     *
+     * @param string $command
+     *
+     * @return int
+     *
+     * Created at: 04/10/2026 22:51:20 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
+    private function runSchemaSpy(string $command): int
+    {
+        $filter = $this->logger->isVerbose()
+            ? null
+            : new OutputFilter(fn(string $line) => $this->logger->logOnly($line));
+
+        $exitCode = $this->processRunner->run(
+            $command,
+            static function (string $text) use ($filter): void {
+                echo $filter?->filter($text) ?? $text;
+            }
+        );
+
+        $suppressed = $filter?->getSuppressedCount() ?? 0;
+        if ($suppressed > 0) {
+            $this->logger->blankLine();
+            $this->logger->info(
+                "{$suppressed} avertissement(s) Graphviz sans incidence masqué(s) " .
+                "(détail dans le fichier de log ou avec --verbose).",
+                'gray'
+            );
+        }
+
+        return $exitCode;
+    }
+
+    /**
+     * [Description for cleanupPropertiesFile]
      * Supprime le fichier properties temporaire de manière sécurisée.
+     *
+     * @param string $propertiesFile
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:51:36 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function cleanupPropertiesFile(string $propertiesFile): void
     {
@@ -118,6 +196,17 @@ final class Runner
         }
     }
 
+    /**
+     * [Description for checkConnection]
+     *
+     * @param array $params
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:51:49 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function checkConnection(array $params): bool
     {
         $this->logger->progress("Vérification de la connexion...");
@@ -126,7 +215,16 @@ final class Runner
             $connection = new Connection($params, $this->logger);
             $connection->test();
 
-            $this->logger->success("Connexion réussie");
+            if ($connection->getMode() === Connection::MODE_TCP) {
+                // Extension PDO absente (ex: pdo_oci) : seule l'accessibilité réseau est vérifiée,
+                // l'authentification sera validée par SchemaSpy via JDBC.
+                $this->logger->warning(
+                    "Extension PHP pdo_" . $connection->getPdoDriverName() . " absente : " .
+                    "serveur joignable, identifiants non testés (validés par SchemaSpy/JDBC)."
+                );
+            } else {
+                $this->logger->success("Connexion réussie");
+            }
             return true;
         } catch (\Exception $e) {
             $this->logger->error(
@@ -140,9 +238,18 @@ final class Runner
     }
 
     /**
+     * [Description for checkSchemaspyCompatibility]
      * Vérifie que le JDK détecté est compatible avec la version majeure de
      * SchemaSpy configurée (ex: SchemaSpy 6 -> JDK 11, SchemaSpy 7 -> JDK 17).
      * La table de correspondance vient de schemaspy.compatibility dans config.json.
+     *
+     * @param string|null $javaVersion
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:52:02 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function checkSchemaspyCompatibility(?string $javaVersion): void
     {
