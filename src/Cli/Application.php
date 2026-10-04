@@ -16,7 +16,7 @@ namespace SchemaSpyCli\Cli;
 use SchemaSpyCli\Core\{Config, Logger, Environment};
 use SchemaSpyCli\Database\{Connection, DriverManager};
 use SchemaSpyCli\SchemaSpy\{GenerationOptions, Runner};
-use SchemaSpyCli\Utils\{FileSystem, PathFinder, Validator, VersionChecker};
+use SchemaSpyCli\Utils\{FileSystem, PathFinder, ProcessRunner, Validator, VersionChecker};
 use SchemaSpyCli\Exceptions\{ConfigException, ConnectionException, ValidationException};
 
 /**
@@ -54,12 +54,20 @@ https://github.com/Laurent-hadjadj/ma-moulinette
 
 BANNER;
 
-    public function __construct()
-    {
+    /**
+     * Les paramètres sont facultatifs et servent aux tests : par défaut l'application
+     * journalise dans logs/, s'ancre à la racine du dépôt et lance le vrai processus Java.
+     */
+    public function __construct(
+        ?Logger $logger = null,
+        private readonly ?string $basePath = null,
+        private readonly ?ProcessRunner $processRunner = null,
+        ?Environment $environment = null
+    ) {
         // Services sans dépendances
-        $this->logger = new Logger(false, dirname(__DIR__, 2) . '/logs/schemaspy-cli.log');
+        $this->logger = $logger ?? new Logger(false, dirname(__DIR__, 2) . '/logs/schemaspy-cli.log');
         $this->argumentParser = new ArgumentParser();
-        $this->environment = new Environment();
+        $this->environment = $environment ?? new Environment();
         $this->validator = new Validator();
         $this->versionChecker = new VersionChecker($this->logger);
         $this->fileSystem = new FileSystem();
@@ -100,27 +108,31 @@ BANNER;
             // 3. Charger la configuration
             $this->loadConfiguration();
 
-            // 4. Initialiser les services dépendants
+            // 4. Ancrer les chemins relatifs de la config (jdbc/, tools/, jar/, report/) à la racine
+            //    de l'application, avant toute détection : indépendant du répertoire courant
+            $this->setupBasePath();
+
+            // 5. Initialiser les services dépendants
             $this->initializeServices();
 
-            // 5. Afficher la bannière (après la config : version SchemaSpy, nombre de drivers)
+            // 6. Afficher la bannière (après la config : version SchemaSpy, nombre de drivers)
             if (!$quietMode) {
                 $this->showBanner();
             }
 
-            // 6. Vérifier l'environnement
+            // 7. Vérifier l'environnement
             if (!$quietMode) {
                 $this->checkEnvironment();
             }
 
-            // 7. Vérifier les drivers JDBC
+            // 8. Vérifier les drivers JDBC
             $this->checkJdbcDrivers();
 
-            // 8. Trouver le chemin de l'environnement
-            $this->setupBasePath();
-
-            // 9. Collecter les paramètres
+            // 9. Collecter les paramètres (null = opération annulée en mode interactif)
             $params = $this->collectParameters();
+            if ($params === null) {
+                return 0;
+            }
 
             // 10. Exécuter SchemaSpy
             return $this->runner->execute($params);
@@ -205,7 +217,7 @@ BANNER;
         // (par défaut il n'en connaît que 3 ; la config en supporte jusqu'à 6).
         $this->validator->setValidDatabaseTypes(array_keys($this->config->getDatabases()));
 
-        $this->pathFinder = new PathFinder($this->config, $this->logger);
+        $this->pathFinder = new PathFinder($this->config, $this->logger, $this->environment);
         $this->driverManager = new DriverManager($this->config, $this->logger);
         $this->interactiveMode = new InteractiveMode(
             $this->config,
@@ -222,7 +234,8 @@ BANNER;
             $this->logger,
             $this->environment,
             $this->pathFinder,
-            $this->driverManager
+            $this->driverManager,
+            $this->processRunner ?? new ProcessRunner()
         );
     }
 
@@ -296,7 +309,7 @@ BANNER;
      */
     private function setupBasePath(): void
     {
-        $basePath = dirname(__DIR__, 2);
+        $basePath = $this->basePath ?? dirname(__DIR__, 2);
         $this->config->setBasePath($basePath);
         $this->logger->debug("📁 Base path: {$basePath}");
     }
@@ -311,7 +324,7 @@ BANNER;
      * @author     Laurent HADJADJ <laurent_h@me.com>
      * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
-    private function collectParameters(): array
+    private function collectParameters(): ?array
     {
         if ($this->argumentParser->isQuiet() || $this->argumentParser->hasParams()) {
             $params = $this->nonInteractiveMode->collect($this->argumentParser->getParams());
@@ -320,7 +333,7 @@ BANNER;
             $params = $this->interactiveMode->collect($this->generationDefaults());
             if ($params === null) {
                 $this->logger->warning("Opération annulée.");
-                exit(0);
+                return null;
             }
             $this->interactiveMode->saveLastParams($params);
             $this->logger->debug("📝 Mode interactif");

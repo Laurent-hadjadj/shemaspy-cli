@@ -24,43 +24,12 @@ use SchemaSpyCli\SchemaSpy\Runner;
 use SchemaSpyCli\Tests\Support\FakeEnvironment;
 use SchemaSpyCli\Tests\Support\TempDir;
 use SchemaSpyCli\Utils\PathFinder;
-use SchemaSpyCli\Utils\ProcessRunner;
+use SchemaSpyCli\Tests\Support\FakeProcessRunner;
 
 /**
- * [Description FakeProcessRunner]
+ * [Description RunnerTest]
  * Tests unitaires pour Runner (processus SchemaSpy simulé, aucune base ni JDK réels)
- * Remplace le vrai processus Java : rejoue des lignes de sortie et un code de retour.
  */
-final class FakeProcessRunner extends ProcessRunner
-{
-    public ?string $command = null;
-    public bool $propertiesFileExistedDuringRun = false;
-    public ?string $javaHomeDuringRun = null;
-
-    /** @param list<string> $lines */
-    public function __construct(private readonly array $lines = [], private readonly int $exitCode = 0)
-    {
-    }
-
-    public function run(string $command, callable $onOutput): int
-    {
-        $this->command = $command;
-        $this->javaHomeDuringRun = getenv('JAVA_HOME') ?: null;
-        if (preg_match('/-configFile\s+"?([^"\s]+)"?/', $command, $m)) {
-            $this->propertiesFileExistedDuringRun = is_file($m[1]);
-        }
-        foreach ($this->lines as $line) {
-            $onOutput($line);
-        }
-        return $this->exitCode;
-    }
-
-    public function propertiesFile(): ?string
-    {
-        return preg_match('/-configFile\s+"?([^"\s]+)"?/', (string) $this->command, $m) ? $m[1] : null;
-    }
-}
-
 final class RunnerTest extends TestCase
 {
     private const NOISE = [

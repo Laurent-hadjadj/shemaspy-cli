@@ -22,6 +22,9 @@ use SchemaSpyCli\Cli\ArgumentParser;
  */
 final class ArgumentParserOptionsTest extends TestCase
 {
+    /** Paramètres de connexion requis : évite l'avertissement « Paramètres requis manquants ». */
+    private const REQUIRED = ['--host=h', '--database=d', '--schema=s', '--user=u', '--password=p'];
+
     private array $savedArgv;
 
     protected function setUp(): void
@@ -59,13 +62,13 @@ final class ArgumentParserOptionsTest extends TestCase
 
     public function testLegacyVizjsParamMapsToEngine(): void
     {
-        $parser = $this->parse('--vizjs=true');
+        $parser = $this->parse('--vizjs=true', ...self::REQUIRED);
         $this->assertSame('vizjs', $parser->getOptions()['engine']);
     }
 
     public function testExplicitEngineWinsOverLegacyVizjs(): void
     {
-        $parser = $this->parse('--vizjs=true', '--engine=graphviz');
+        $parser = $this->parse('--vizjs=true', '--engine=graphviz', ...self::REQUIRED);
         $this->assertSame('graphviz', $parser->getOptions()['engine']);
     }
 }

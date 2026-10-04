@@ -18,11 +18,16 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 - Lanceurs : un seul point d'entrée `bin/schemaspy` et un lanceur Windows `bin/schemaspy.bat`. Suppression de `bin/schemaspy.sh`, `schemaspy.bat` (racine) et `shemapspy.ps1`.
 - Drivers JDBC : PostgreSQL 42.7.13, MySQL Connector/J 26.7.0, MariaDB 3.5.10, SQL Server 13.6.0 (jre8/jre11), Oracle ojdbc11 23.26.3.0.0. Les anciens JAR sont rangés dans `jdbc/old/` (ignoré).
 - Les erreurs de validation des paramètres et les erreurs inattendues sont affichées sans `--verbose`.
+- `PathFinder` mémorise les détections JDK/Graphviz (un seul `java -version` par exécution au lieu d'un par appel).
+- `Application` : constructeur à paramètres facultatifs (logger, base path, processus, environnement) pour les tests ; l'annulation du mode interactif retourne 0 au lieu d'appeler `exit()` ; le dernier jeu de paramètres (`schemaspy.last.json`) suit le base path.
+- Tests de `Application::run()` de bout en bout (13 scénarios : succès, mode silencieux, options, erreurs de config/paramètres/connexion, code de retour SchemaSpy, mode interactif, annulation). 227 tests au total.
+- Exécution de SchemaSpy : `proc_open` en priorité, repli automatique sur `popen` s'il est refusé (Windows, terminal intégré de VS Code : « proc_open(): Command conversion failed »), erreur explicite si aucun des deux ne démarre.
 - SchemaSpy : fork `7.0.3-lh.2` (export Markdown, diagrammes de résumé corrects avec Graphviz 16.1.0).
 - Choix du JDK : le premier JDK satisfaisant la version requise par SchemaSpy est retenu (un JDK 8 système ne masque plus `tools/jdk17`).
 
 ### Corrigé
 
+- Chemins relatifs de `config.json` (`jdbc/`, `tools/`...) : le base path est défini avant la détection du JDK et le scan des drivers, l'outil ne dépend plus du répertoire courant.
 - `DriverManager` : un bloc `jdbc_validation` partiel dans `config.json` provoquait « Undefined array key » ; les clés absentes prennent maintenant leur valeur par défaut.
 - `Environment` : `trim(null)` (dépréciation PHP 8.1+) quand `where`/`which` ne trouvent rien.
 - `LoggerTest::testDebugInVerboseMode` alignée sur le format actuel des messages de debug.
@@ -78,6 +83,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Corrigé
 
+- Chemins relatifs de `config.json` (`jdbc/`, `tools/`...) : le base path est défini avant la détection du JDK et le scan des drivers, l'outil ne dépend plus du répertoire courant.
 - `DriverManager` : un bloc `jdbc_validation` partiel dans `config.json` provoquait « Undefined array key » ; les clés absentes prennent maintenant leur valeur par défaut.
 - `Environment` : `trim(null)` (dépréciation PHP 8.1+) quand `where`/`which` ne trouvent rien.
 - `LoggerTest::testDebugInVerboseMode` alignée sur le format actuel des messages de debug.

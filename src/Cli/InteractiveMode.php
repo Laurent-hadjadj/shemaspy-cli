@@ -441,6 +441,12 @@ final class InteractiveMode
         return $this->logger->promptConfirmation("\nConfirmer la génération ?", true);
     }
 
+    /** Fichier des derniers paramètres : à la racine de l'application (base path de la config). */
+    private function lastParamsPath(): string
+    {
+        return ($this->config->getBasePath() ?? dirname(__DIR__, 2)) . '/schemaspy.last.json';
+    }
+
     /**
      * [Description for loadLastParams]
      * Chargement des derniers paramètres ?
@@ -453,7 +459,7 @@ final class InteractiveMode
      */
     private function loadLastParams(): void
     {
-        $lastPath = dirname(__DIR__, 2) . '/' . 'schemaspy.last.json';
+        $lastPath = $this->lastParamsPath();
         if (file_exists($lastPath)) {
             $content = file_get_contents($lastPath);
             $this->lastParams = json_decode($content, true) ?? [];
@@ -491,7 +497,7 @@ final class InteractiveMode
             'last_used' => date('Y-m-d H:i:s'),
         ];
 
-        $lastPath = dirname(__DIR__, 2) . '/' . 'schemaspy.last.json';
+        $lastPath = $this->lastParamsPath();
         file_put_contents(
             $lastPath,
             json_encode($save, JSON_PRETTY_PRINT)
