@@ -1,13 +1,22 @@
 <?php
+
 /**
- * Gestion des logs et de l'affichage
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\Core;
 
+/**
+ * [Description Logger]
+ * Gestion des logs et de l'affichage
+ */
 final class Logger
 {
     private bool $quiet = false;
@@ -29,6 +38,9 @@ final class Logger
      *   sans couleurs, indépendant du mode quiet/verbose). Écrasé à chaque exécution.
      *   Null (défaut) désactive la sortie fichier — c'est le cas dans les tests.
      */
+    /** @var resource|null */
+    private $inputStream = null;
+
     public function __construct(private bool $forceColor = false, ?string $logFile = null)
     {
         $this->colorSupport = $this->forceColor || $this->supportsColor();
@@ -39,9 +51,18 @@ final class Logger
     }
 
     /**
+     * [Description for initLogFile]
      * Crée le dossier si besoin et écrase le fichier de log (trace de la
      * dernière exécution uniquement). Échoue silencieusement (pas de dossier
      * accessible en écriture) : la sortie console reste inchangée.
+     *
+     * @param string $logFile
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:36:16 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function initLogFile(string $logFile): bool
     {
@@ -57,8 +78,17 @@ final class Logger
     }
 
     /**
+     * [Description for writeToFile]
      * Écrit une ligne dans le fichier de log, indépendamment du mode
      * quiet/verbose de la console (le fichier garde toujours la trace complète).
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:36:34 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function writeToFile(string $message): void
     {
@@ -68,13 +98,64 @@ final class Logger
         @file_put_contents($this->logFile, '[' . date('Y-m-d H:i:s') . '] ' . $message . "\n", FILE_APPEND);
     }
 
+    /**
+     * [Description for setInputStream]
+     * Remplace STDIN comme source des saisies (prompts) : utile pour les tests et les scripts.
+     *
+     * @param resource|null $stream
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:36:49 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
+    public function setInputStream($stream): void
+    {
+        $this->inputStream = $stream;
+    }
+
+    /**
+     * [Description for getLogFile]
+     *
+     * @return string|null
+     *
+     * Created at: 04/10/2026 22:37:20 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getLogFile(): ?string
     {
         return $this->logFile;
     }
 
     /**
+     * [Description for logOnly]
+     * Écrit dans le fichier de log uniquement (rien sur la console) : trace complète
+     * des lignes que l'affichage choisit de masquer.
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:37:23 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
+    public function logOnly(string $message): void
+    {
+        $this->writeToFile("[SCHEMASPY] " . $message);
+    }
+
+    /**
+     * [Description for supportsColor]
      * Détecte si le terminal supporte les couleurs
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:37:40 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function supportsColor(): bool
     {
@@ -118,69 +199,189 @@ final class Logger
         return function_exists('posix_isatty') && posix_isatty(STDOUT);
     }
 
+    /**
+     * [Description for setQuiet]
+     *
+     * @param bool $quiet
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:06 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function setQuiet(bool $quiet): void
     {
         $this->quiet = $quiet;
         $this->colorSupport = $this->forceColor || $this->supportsColor();
     }
 
+    /**
+     * [Description for setVerbose]
+     *
+     * @param bool $verbose
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:09 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function setVerbose(bool $verbose): void
     {
         $this->verbose = $verbose;
     }
 
+    /**
+     * [Description for setForceColor]
+     *
+     * @param bool $forceColor
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:11 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function setForceColor(bool $forceColor): void
     {
         $this->forceColor = $forceColor;
         $this->colorSupport = $this->forceColor || $this->supportsColor();
     }
 
-    // ✅ Méthodes principales
+    /**
+     * [Description for info]
+     * Méthodes principales
+     *
+     * @param string $message
+     * @param string $color
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:14 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function info(string $message, string $color = 'default'): void
     {
-        $this->writeToFile($message);
+        $this->writeToFile("[INFO]     ℹ️" . $message);
         if ($this->quiet) {
             return;
         }
-        $this->output($message, $color);
+        $this->output("ℹ️" . $message, $color);
     }
 
+    /**
+     * [Description for error]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:33 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function error(string $message): void
     {
-        $this->writeToFile("✗ " . $message);
-        $this->output("✗ " . $message, 'red');
+        $this->writeToFile("[ERROR]    ❌ " . $message);
+        $this->output("❌ " . $message, 'red');
     }
 
+    /**
+     * [Description for success]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:35 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function success(string $message): void
     {
-        $this->writeToFile("✅ " . $message);
+        $this->writeToFile("[SUCCESS] ✅ " . $message);
         $this->output("✅ " . $message, 'green');
     }
 
+    /**
+     * [Description for warning]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:37 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function warning(string $message): void
     {
-        $this->writeToFile("⚠️  " . $message);
-        $this->output("⚠️  " . $message, 'yellow');
+        $this->writeToFile("[WARN]     ⚠️ " . $message);
+        $this->output("⚠️ " . $message, 'yellow');
     }
 
-    public function debug(string $message): void
+    public function critical(string $message): void
     {
-        $this->writeToFile("[DEBUG] " . $message);
+        $this->writeToFile("[CRITICAL] 🔴 " . $message);
         if (!$this->verbose) {
             return;
         }
-        $this->output("[DEBUG] " . $message, 'gray');
+        $this->output("🔴 " . $message, 'gray');
     }
 
+    /**
+     * [Description for debug]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:42 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
+    public function debug(string $message): void
+    {
+        $this->writeToFile("[DEBUG]    🛠️" . $message);
+        if (!$this->verbose) {
+            return;
+        }
+        $this->output("DEBUG 🛠️ " . $message, 'gray');
+    }
+
+    /**
+     * [Description for progress]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:46 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function progress(string $message): void
     {
-        $this->writeToFile("🔍 " . $message);
+        $this->writeToFile("[PROGRESS] ⚙️ " . $message);
         if ($this->quiet) {
             return;
         }
-        $this->output("🔍 " . $message, 'cyan');
+        $this->output("PROGRESS ⚙️ " . $message, 'cyan');
     }
 
+    /**
+     * [Description for title]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:49 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function title(string $message): void
     {
         $this->writeToFile(str_repeat('=', 50));
@@ -194,6 +395,33 @@ final class Logger
         $this->output(str_repeat("═", 50), 'gray');
     }
 
+
+
+    /**
+
+
+     * [Description for blankLine]
+
+
+     *
+
+
+     * @return void
+
+
+     *
+
+
+     * Created at: 04/10/2026 22:38:53 (Europe/Paris)
+
+
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+
+
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+
+
+     */
     public function separator(string $char = '═', int $length = 50): void
     {
         if ($this->quiet) {
@@ -202,6 +430,15 @@ final class Logger
         $this->output(str_repeat($char, $length), 'gray');
     }
 
+    /**
+     * [Description for blankLine]
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:56 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function blankLine(): void
     {
         $this->writeToFile('');
@@ -211,6 +448,18 @@ final class Logger
         echo "\n";
     }
 
+    /**
+     * [Description for table]
+     *
+     * @param array $headers
+     * @param array $rows
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:38:58 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function table(array $headers, array $rows): void
     {
         $this->writeToFile(implode(' | ', $headers));
@@ -254,6 +503,18 @@ final class Logger
         }
     }
 
+    /**
+     * [Description for output]
+     *
+     * @param string $message
+     * @param string $color
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:39:04 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function output(string $message, string $color = 'default'): void
     {
         if ($this->quiet) {
@@ -271,9 +532,18 @@ final class Logger
     }
 
     /**
+     * [Description for stripEmoji]
      * Retire les emojis de la sortie console : de nombreux terminaux (cmd.exe,
      * PowerShell selon la codepage) les affichent en "?" illisibles. Le fichier
      * de log (writeToFile) n'appelle pas cette méthode et garde les emojis.
+     *
+     * @param string $message
+     *
+     * @return string
+     *
+     * Created at: 04/10/2026 22:39:08 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function stripEmoji(string $message): string
     {
@@ -294,12 +564,19 @@ final class Logger
     }
 
     /**
+     * [Description for prompt]
      * Demande une saisie à l'utilisateur.
      *
      * Le paramètre $inputStream (principalement pour les tests) permet d'injecter
      * un flux de lecture à la place de STDIN.
      *
      * @param resource|null $inputStream Flux d'entrée (défaut: STDIN)
+     *
+     * @return string
+     *
+     * Created at: 04/10/2026 22:39:36 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     public function prompt(string $message, string $default = '', $inputStream = null): string
     {
@@ -307,7 +584,7 @@ final class Logger
             return $default;
         }
 
-        $stream = $inputStream ?? STDIN;
+        $stream = $inputStream ?? $this->inputStream ?? STDIN;
 
         $display = $default ? "{$message} [{$default}]" : $message;
         echo "{$display}: ";
@@ -316,6 +593,18 @@ final class Logger
         return $value !== '' ? $value : $default;
     }
 
+    /**
+     * [Description for promptPassword]
+     *
+     * @param string $message
+     * @param null $inputStream
+     *
+     * @return string
+     *
+     * Created at: 04/10/2026 22:40:04 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function promptPassword(string $message, $inputStream = null): string
     {
         if ($this->quiet) {
@@ -326,6 +615,7 @@ final class Logger
         if (PHP_OS_FAMILY !== 'Windows'
             && function_exists('readline')
             && $inputStream === null
+            && $this->inputStream === null
         ) {
             system('stty -echo');
             echo "{$message}: ";
@@ -339,6 +629,18 @@ final class Logger
         return $this->prompt($message, '', $inputStream);
     }
 
+    /**
+     * [Description for promptConfirmation]
+     *
+     * @param string $message
+     * @param bool $default
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:40:07 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function promptConfirmation(string $message, bool $default = true): bool
     {
         if ($this->quiet) {
@@ -355,23 +657,60 @@ final class Logger
         return $response === 'o' || $response === 'oui' || $response === 'yes';
     }
 
-    // ✅ Getters
+    // Getters
+
+    /**
+     * [Description for isQuiet]
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:40:15 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function isQuiet(): bool
     {
         return $this->quiet;
     }
 
+    /**
+     * [Description for isVerbose]
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:40:33 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function isVerbose(): bool
     {
         return $this->verbose;
     }
 
+    /**
+     * [Description for hasColorSupport]
+     *
+     * @return bool
+     *
+     * Created at: 04/10/2026 22:40:36 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function hasColorSupport(): bool
     {
         return $this->colorSupport;
     }
 
-    // ✅ Méthodes utilitaires
+    // Méthodes utilitaires
+
+    /**
+     * [Description for clearLine]
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:40:39 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function clearLine(): void
     {
         if ($this->quiet) {
@@ -380,6 +719,19 @@ final class Logger
         echo "\r\033[K";
     }
 
+    /**
+     * [Description for progressBar]
+     *
+     * @param int $current
+     * @param int $total
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 04/10/2026 22:41:15 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function progressBar(int $current, int $total, string $message = ''): void
     {
         if ($this->quiet) {

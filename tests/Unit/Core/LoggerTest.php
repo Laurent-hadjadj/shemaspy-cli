@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Tests unitaires pour la classe Logger
- * 
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\Tests\Unit\Core;
@@ -11,6 +16,10 @@ namespace SchemaSpyCli\Tests\Unit\Core;
 use PHPUnit\Framework\TestCase;
 use SchemaSpyCli\Core\Logger;
 
+/**
+ * [Description LoggerTest]
+  * Tests unitaires pour la classe Logger
+ */
 final class LoggerTest extends TestCase
 {
     private Logger $logger;
@@ -121,7 +130,9 @@ final class LoggerTest extends TestCase
         $this->logger->debug('Debug message');
         
         $output = ob_get_clean();
-        $this->assertStringContainsString('[DEBUG] Debug message', $output);
+        // Format console : « DEBUG <message> » (emoji retiré, éventuellement coloré)
+        $this->assertStringContainsString('DEBUG', $output);
+        $this->assertStringContainsString('Debug message', $output);
     }
 
     public function testDebugNotInVerboseMode(): void
