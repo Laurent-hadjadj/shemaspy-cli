@@ -38,8 +38,14 @@ final class FakeEnvironment extends Environment
         parent::__construct();
     }
 
+    /** Nombre d'appels, pour vérifier les mémorisations. */
+    public int $javaHomeCalls = 0;
+    public int $javaVersionCalls = 0;
+    public int $graphvizPathCalls = 0;
+
     public function getJavaHome(): ?string
     {
+        $this->javaHomeCalls++;
         return $this->systemJavaHome;
     }
 
@@ -50,12 +56,14 @@ final class FakeEnvironment extends Environment
 
     public function getJavaVersion(?string $javaExe = null): ?string
     {
+        $this->javaVersionCalls++;
         $home = dirname(dirname((string) $javaExe));
         return $this->javaVersions[$home] ?? null;
     }
 
     public function findGraphvizInPath(): ?string
     {
+        $this->graphvizPathCalls++;
         return $this->dotInPath;
     }
 

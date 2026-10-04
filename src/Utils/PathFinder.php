@@ -25,6 +25,12 @@ final class PathFinder
 {
     private readonly Environment $environment;
 
+    // Résultats de détection mémorisés (null est un résultat valide : "introuvable")
+    private ?array $java = null;
+    private bool $javaResolved = false;
+    private ?array $graphviz = null;
+    private bool $graphvizResolved = false;
+
     public function __construct(
         private readonly Config $config,
         private readonly ?Logger $logger = null,
@@ -50,6 +56,16 @@ final class PathFinder
      * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     public function detectJava(): ?array
+    {
+        // Détection mémorisée : chaque candidat coûte un `java -version` (processus externe)
+        if (!$this->javaResolved) {
+            $this->java = $this->resolveJava();
+            $this->javaResolved = true;
+        }
+        return $this->java;
+    }
+
+    private function resolveJava(): ?array
     {
         $required = $this->requiredJavaVersion();
         $first = null;
@@ -131,6 +147,15 @@ final class PathFinder
      * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     public function detectGraphviz(): ?array
+    {
+        if (!$this->graphvizResolved) {
+            $this->graphviz = $this->resolveGraphviz();
+            $this->graphvizResolved = true;
+        }
+        return $this->graphviz;
+    }
+
+    private function resolveGraphviz(): ?array
     {
         // 1. Système : PATH
         $exeFromPath = $this->environment->findGraphvizInPath();

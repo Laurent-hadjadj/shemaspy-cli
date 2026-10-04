@@ -203,4 +203,40 @@ final class PathFinderTest extends TestCase
     {
         $this->assertNull($this->finder(new FakeEnvironment())->detectGraphviz());
     }
+
+    // --- mémorisation --------------------------------------------------
+
+    public function testJdkDetectionRunsOnlyOnce(): void
+    {
+        $system = $this->fakeJdk('sys/jdk21');
+        $env = new FakeEnvironment($system, [$system => '21.0.1']);
+        $finder = $this->finder($env);
+
+        $first = $finder->detectJava();
+        $second = $finder->detectJava();
+
+        $this->assertSame($first, $second);
+        $this->assertSame(1, $env->javaVersionCalls, 'un seul `java -version`');
+        $this->assertSame(1, $env->javaHomeCalls);
+    }
+
+    public function testMissingJdkIsAlsoMemoized(): void
+    {
+        $env = new FakeEnvironment();
+        $finder = $this->finder($env);
+
+        $this->assertNull($finder->detectJava());
+        $this->assertNull($finder->detectJava());
+        $this->assertSame(1, $env->javaHomeCalls, 'l\'absence de JDK n\'est pas recherchée à nouveau');
+    }
+
+    public function testGraphvizDetectionRunsOnlyOnce(): void
+    {
+        $env = new FakeEnvironment();
+        $finder = $this->finder($env);
+
+        $this->assertNull($finder->detectGraphviz());
+        $this->assertNull($finder->detectGraphviz());
+        $this->assertSame(1, $env->graphvizPathCalls);
+    }
 }
