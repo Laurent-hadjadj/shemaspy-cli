@@ -7,8 +7,7 @@ schemaspy.last.json
 *.log
 
 # Environnement
-/tools/jdk17/
-/tools/graphviz-2.38/*
+# (les outils embarqués tools/ ne sont jamais versionnés)
 
 # JDBC drivers (si copiés depuis la racine)
 /jdbc/*.jar
@@ -40,3 +39,5 @@ Thumbs.db
 /tests/coverage.xml
 /tests/.phpunit.result.cache
 /coverage/
+/tools/*
+/jdbc/old/
