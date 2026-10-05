@@ -216,7 +216,7 @@ class Environment
 
         // Format historique JDK 8 et antérieur : version "1.8.0_231" (suffixe de build ignoré).
         // Format JDK 9+ : version "17.0.9" ou "11".
-        if (preg_match('/version "([0-9]+(?:\.[0-9]+)*)(?:_[0-9]+)?"/', (string) $output, $matches)) {
+        if (preg_match('/version "(\d+(?:\.\d+)*)(?:_\d+)?"/', (string) $output, $matches)) {
             return $matches[1];
         }
 
