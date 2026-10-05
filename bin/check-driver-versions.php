@@ -1,10 +1,19 @@
 #!/usr/bin/env php
 <?php
+
+/**
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ */
+
 /**
  * Script de vérification des versions des drivers
- * 
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
  */
 
 declare(strict_types=1);
@@ -20,14 +29,14 @@ $config = new Config();
 try {
     $configFile = $argv[1] ?? 'config/config.json';
     $config->load($configFile);
-    
+
     $jdbcPath = $config->getPath('jdbc_folder');
     $jdbcConfig = $config->get('jdbc', []);
-    
+
     $logger->info("📊 Vérification des versions des drivers", 'cyan');
     $logger->info(str_repeat("═", 50), 'gray');
     $logger->info("");
-    
+
     // Créer un tableau des drivers configurés par nom
     $configuredDrivers = [];
     foreach ($jdbcConfig as $dbType => $dbConfig) {
@@ -38,21 +47,21 @@ try {
             ];
         }
     }
-    
+
     // Lire les fichiers dans le dossier JDBC
     $files = scandir($jdbcPath);
     $foundDrivers = [];
-    
+
     foreach ($files as $file) {
         if (!preg_match('/\.jar$/', $file)) {
             continue;
         }
-        
+
         $filePath = $jdbcPath . '/' . $file;
         $size = filesize($filePath);
         $sizeFormatted = round($size / 1024, 2) . ' KB';
         $mtime = date('Y-m-d H:i:s', filemtime($filePath));
-        
+
         $foundDrivers[$file] = [
             'path' => $filePath,
             'size' => $sizeFormatted,
@@ -60,7 +69,7 @@ try {
             'configured' => isset($configuredDrivers[$file])
         ];
     }
-    
+
     // Afficher le rapport
     $logger->info("📦 Fichiers trouvés:", 'white');
     foreach ($foundDrivers as $file => $info) {
@@ -69,7 +78,7 @@ try {
             $version = $configuredDrivers[$file]['config']['version'] ?? 'N/A';
             $javaVersion = $configuredDrivers[$file]['config']['java_version'] ?? 'N/A';
             $dbVersion = $configuredDrivers[$file]['config']['db_version'] ?? 'N/A';
-            
+
             $logger->info("  ✅ {$file}", 'green');
             $logger->info("     Type: {$dbType}", 'gray');
             $logger->info("     Version: {$version}", 'gray');
@@ -82,7 +91,7 @@ try {
             $obsoletePatterns = $config->get('obsolete_drivers', []);
             $isObsolete = false;
             $obsoleteInfo = null;
-            
+
             foreach ($obsoletePatterns as $pattern) {
                 if (fnmatch($pattern['pattern'], $file)) {
                     $isObsolete = true;
@@ -90,7 +99,7 @@ try {
                     break;
                 }
             }
-            
+
             if ($isObsolete) {
                 $logger->info("  🗑️  {$file} - OBSOLÈTE", 'red');
                 $logger->info("     {$obsoleteInfo['reason']}", 'gray');
@@ -103,13 +112,13 @@ try {
         }
         $logger->info("");
     }
-    
+
     // Résumé
     $total = count($foundDrivers);
     $configured = count(array_filter($foundDrivers, fn($i) => $i['configured']));
     $obsolete = 0;
     $unconfigured = 0;
-    
+
     foreach ($foundDrivers as $file => $info) {
         if (!$info['configured']) {
             $isObsolete = false;
@@ -126,21 +135,21 @@ try {
             }
         }
     }
-    
+
     $logger->info(str_repeat("═", 50), 'gray');
     $logger->info("📊 Résumé:", 'white');
     $logger->info("  - Total drivers: {$total}", 'default');
     $logger->info("  - Configurés: {$configured}", 'green');
     $logger->info("  - Obsolètes: {$obsolete}", 'red');
     $logger->info("  - Non configurés: {$unconfigured}", 'yellow');
-    
+
     if ($obsolete > 0) {
         $logger->info("");
         $logger->info("💡 Pour supprimer les drivers obsolètes:", 'cyan');
         $logger->info("   php bin/cleanup-drivers.php", 'gray');
         $logger->info("   php bin/cleanup-drivers.php --dry-run  # Simulation", 'gray');
     }
-    
+
 } catch (\Exception $e) {
     $logger->error("Erreur: " . $e->getMessage());
     exit(1);
