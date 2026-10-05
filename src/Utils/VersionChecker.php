@@ -13,6 +13,7 @@
 
 namespace SchemaSpyCli\Utils;
 
+use SchemaSpyCli\Core\Environment;
 use SchemaSpyCli\Core\Logger;
 
 /**
@@ -21,8 +22,18 @@ use SchemaSpyCli\Core\Logger;
  */
 final class VersionChecker
 {
-    public function __construct(private readonly Logger $logger)
-    {
+    /**
+     * Les trois derniers paramètres sont facultatifs et servent aux tests : par défaut le vrai
+     * environnement (java du système, extensions chargées, PHP_VERSION).
+     *
+     * @param (\Closure(string): bool)|null $extensionLoaded
+     */
+    public function __construct(
+        private readonly Logger $logger,
+        private readonly ?Environment $environment = null,
+        private readonly ?\Closure $extensionLoaded = null,
+        private readonly ?string $phpVersion = null
+    ) {
     }
 
     /**
@@ -36,17 +47,9 @@ final class VersionChecker
      */
     public function checkJavaVersion(): ?string
     {
-        $output = shell_exec('java -version 2>&1');
-
-        if (preg_match('/version "([0-9.]+)"/', $output, $matches)) {
-            return $matches[1];
-        }
-
-        if (preg_match('/openjdk version "([0-9.]+)"/', $output, $matches)) {
-            return $matches[1];
-        }
-
-        return null;
+        // Même logique que PathFinder : reconnaît « 1.8.0_231 » (JDK 8) comme « 17.0.8 »,
+        // et renvoie null (sans avertissement PHP) quand java est absent.
+        return ($this->environment ?? new Environment())->getJavaVersion();
     }
 
     /**
@@ -60,7 +63,7 @@ final class VersionChecker
      */
     public function checkPhpVersion(): string
     {
-        return PHP_VERSION;
+        return $this->phpVersion ?? PHP_VERSION;
     }
 
     /**
@@ -74,7 +77,7 @@ final class VersionChecker
      */
     public function checkRequiredPhpVersion(): bool
     {
-        return version_compare(PHP_VERSION, '8.1.0', '>=');
+        return version_compare($this->checkPhpVersion(), '8.1.0', '>=');
     }
 
     /**
@@ -90,9 +93,10 @@ final class VersionChecker
     {
         $required = ['pdo', 'json', 'pdo_pgsql', 'pdo_mysql', 'pdo_oci'];
         $missing = [];
+        $isLoaded = $this->extensionLoaded ?? extension_loaded(...);
 
         foreach ($required as $ext) {
-            if (!extension_loaded($ext)) {
+            if (!$isLoaded($ext)) {
                 $missing[] = $ext;
             }
         }
@@ -113,7 +117,7 @@ final class VersionChecker
      */
     public function getSchemaSpyVersion(string $jarFile): ?string
     {
-        if (!file_exists($jarFile)) {
+        if (!is_file($jarFile) || !class_exists(\ZipArchive::class)) {
             return null;
         }
 
@@ -151,7 +155,7 @@ final class VersionChecker
 
         // Vérifier la version PHP
         if (!$this->checkRequiredPhpVersion()) {
-            $issues[] = "PHP 8.1 ou supérieur requis (actuel: " . PHP_VERSION . ")";
+            $issues[] = "PHP 8.1 ou supérieur requis (actuel: " . $this->checkPhpVersion() . ")";
         }
 
         // Vérifier les extensions
@@ -164,7 +168,7 @@ final class VersionChecker
         $javaVersion = $this->checkJavaVersion();
         if ($javaVersion === null) {
             $issues[] = "Java non trouvé dans le PATH";
-        } elseif (version_compare($javaVersion, '11.0', '<')) {
+        } elseif (version_compare($javaVersion, '11', '<')) { // '11' et non '11.0' : "11" < "11.0" en PHP
             $issues[] = "Java 11 ou supérieur requis (actuel: {$javaVersion})";
         }
 

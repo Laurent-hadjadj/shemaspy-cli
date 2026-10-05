@@ -57,6 +57,10 @@ final class FakeEnvironment extends Environment
     public function getJavaVersion(?string $javaExe = null): ?string
     {
         $this->javaVersionCalls++;
+        if ($javaExe === null) {
+            // `java` résolu par le PATH (aucun exécutable précis) : clé « PATH »
+            return $this->javaVersions['PATH'] ?? null;
+        }
         $home = dirname(dirname((string) $javaExe));
         return $this->javaVersions[$home] ?? null;
     }

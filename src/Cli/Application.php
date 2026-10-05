@@ -70,7 +70,7 @@ BANNER;
         $this->argumentParser = new ArgumentParser();
         $this->environment = $environment ?? new Environment();
         $this->validator = new Validator();
-        $this->versionChecker = new VersionChecker($this->logger);
+        $this->versionChecker = new VersionChecker($this->logger, $this->environment);
         $this->fileSystem = new FileSystem();
 
         // Config chargé plus tard (lors du run())
