@@ -53,6 +53,7 @@ final class NonInteractiveMode
 
         // Déterminer le type de base de données
         $dbType = $cliParams['db'] ?? 'postgresql';
+        $cliParams['db'] = $dbType;
         $dbConfig = $this->config->getDatabase($dbType);
 
         if ($dbConfig === null) {
@@ -130,7 +131,13 @@ final class NonInteractiveMode
         $this->validator->validateHost($params['host']);
 
         $port = $params['port'] ?? $dbConfig['port'];
-        $this->validator->validatePort($port);
+        if (!is_int($port) && !(is_string($port) && ctype_digit($port))) {
+            throw new ValidationException(
+                'Port invalide : ' . (is_scalar($port) ? (string) $port : gettype($port)) .
+                '. Doit être un nombre entre 1 et 65535'
+            );
+        }
+        $this->validator->validatePort((int) $port);
 
         $this->validator->validateDatabase($params['database']);
         $this->validator->validateSchema($params['schema']);
