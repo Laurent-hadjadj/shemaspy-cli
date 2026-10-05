@@ -7,7 +7,23 @@
 ┗┓┏┓┏┛━┏┫┣┓━┃┃\
 ━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.1.0 Release on October 2026 !
 
-ShemaSpy-cli est une application PHP qui pilote l'application [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.2 (Java) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
+[![Version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
+[![PHP](https://img.shields.io/badge/PHP-%E2%89%A5%208.1-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![PHP testé](https://img.shields.io/badge/PHP%20test%C3%A9-8.5.5%20NTS-777BB4?logo=php&logoColor=white)](https://www.php.net/releases/)
+[![SchemaSpy](https://img.shields.io/badge/SchemaSpy-7.0.3--lh.3-orange)](https://github.com/schemaspy/schemaspy)
+[![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=openjdk&logoColor=white)](https://adoptium.net/)
+[![Graphviz](https://img.shields.io/badge/Graphviz-16.1.0-1F4E79)](https://graphviz.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-11--18-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Oracle](https://img.shields.io/badge/Oracle-19c--23c-F80000?logo=oracle&logoColor=white)](https://www.oracle.com/database/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![MariaDB](https://img.shields.io/badge/MariaDB-10.6--11.6-003545?logo=mariadb&logoColor=white)](https://mariadb.org/)
+[![SQL Server](https://img.shields.io/badge/SQL%20Server-2016--2022-CC2927?logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
+[![Tests](https://img.shields.io/badge/tests-716%20passed-success?logo=phpunit&logoColor=white)](tests/)
+[![Assertions](https://img.shields.io/badge/assertions-1546-success)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-98.28%25-brightgreen)](tests/phpunit.xml)
+[![Licence](https://img.shields.io/badge/licence-CC%20BY--NC--SA%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
+ShemaSpy-cli est une application PHP qui pilote l'application [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.3-lh.3 (Java, fork avec export Markdown) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
 
 ## Sommaire
 
