@@ -29,6 +29,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Corrigé
 
+- Validation du nom de base : le point est autorisé (`BASE.exemple.fr`), pour les noms de service Oracle avec domaine. Il ne peut ni commencer ni finir le nom, ni être doublé. Pour se connecter à un *service* (et non à un SID) il faut un type SchemaSpy `orathin-service` dans `config.json` ; le type `oracle` livré (`orathin`) attend un SID.
 - Mode non-interactif : un port non numérique (`--port=abc`) provoquait un `TypeError` (« Erreur inattendue ») ; un port décimal (`5432.5`) était accepté en silence comme `5432`. Les deux donnent maintenant une erreur de validation claire. Une clé `db` absente de `collect()` retombe proprement sur `postgresql`.
 - Tests de `NonInteractiveMode` (45 cas : paramètres requis, types de base, valeurs invalides, ports, `--vizjs`, schémas système, mot de passe absent du log).
 - `bin/schemaspy.bat` ne fonctionnait pas (« 'SchemaSpy' n'est pas reconnu en tant que commande interne ou externe ») : fichier en LF avec des accents dans un `rem`. Réécrit en ASCII/CRLF, message clair si PHP est absent du PATH, code de retour propagé. `.gitattributes` fixe CRLF pour `*.bat` et LF pour `bin/schemaspy` ; `LauncherTest` verrouille ces règles.
@@ -90,6 +91,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Corrigé
 
+- Validation du nom de base : le point est autorisé (`FONDS.exemple.fr`), pour les noms de service Oracle avec domaine. Il ne peut ni commencer ni finir le nom, ni être doublé. Pour se connecter à un *service* (et non à un SID) il faut un type SchemaSpy `orathin-service` dans `config.json` ; le type `oracle` livré (`orathin`) attend un SID.
 - 🛠️ Chemins relatifs de `config.json` (`jdbc/`, `tools/`...) : le base path est défini avant la détection du JDK et le scan des drivers, l'outil ne dépend plus du répertoire courant.
 - 🛠️ `DriverManager` : un bloc `jdbc_validation` partiel dans `config.json` provoquait « Undefined array key » ; les clés absentes prennent maintenant leur valeur par défaut.
 - 🛠️ `Environment` : `trim(null)` (dépréciation PHP 8.1+) quand `where`/`which` ne trouvent rien.

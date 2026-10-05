@@ -144,7 +144,13 @@ final class Validator
             throw new ValidationException("Le nom de la base de données ne peut pas être vide");
         }
 
-        if (!preg_match('/^[a-zA-Z0-9_\-]+$/', $database)) {
+        // Lettres, chiffres, _ - et . : un nom de service Oracle porte souvent un domaine
+        // (ex: FONDS.exemple.fr). Le point ne peut ni commencer ni finir le nom, ni être doublé.
+        if (!preg_match('/^[a-zA-Z0-9_\-\.]+$/', $database)
+            || str_starts_with($database, '.')
+            || str_ends_with($database, '.')
+            || str_contains($database, '..')
+        ) {
             throw new ValidationException("Nom de base de données invalide: {$database}");
         }
 

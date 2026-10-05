@@ -168,4 +168,42 @@ final class ValidatorTest extends TestCase
         $this->expectException(ValidationException::class);
         $this->validator->validateJavaVersion('1.8.0');
     }
+
+    /** @dataProvider dottedDatabaseNames */
+    public function testValidateDatabaseAcceptsDotsForOracleServiceNames(string $name): void
+    {
+        $this->validator->validateDatabase($name);
+        $this->addToAssertionCount(1);
+    }
+
+    public static function dottedDatabaseNames(): array
+    {
+        return [
+            'service avec domaine'  => ['FONDS.exemple.fr'],
+            'domaine long'          => ['mon_service.direction.exemple-entreprise.fr'],
+            'un seul point'         => ['svc.prod'],
+            'SID simple (inchangé)' => ['FONDSPRD'],
+        ];
+    }
+
+    /** @dataProvider badDottedDatabaseNames */
+    public function testValidateDatabaseRejectsMisplacedDots(string $name): void
+    {
+        $this->expectException(\SchemaSpyCli\Exceptions\ValidationException::class);
+        $this->expectExceptionMessage('Nom de base de données invalide');
+        $this->validator->validateDatabase($name);
+    }
+
+    public static function badDottedDatabaseNames(): array
+    {
+        return [
+            'point initial'      => ['.cache'],
+            'point final'        => ['svc.'],
+            'points consécutifs' => ['svc..prod'],
+            'remontée de chemin' => ['..'],
+            'seulement un point' => ['.'],
+            'espace après point' => ['svc. prod'],
+            'slash'              => ['svc/prod'],
+        ];
+    }
 }

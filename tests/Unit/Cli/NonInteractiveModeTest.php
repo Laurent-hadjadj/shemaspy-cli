@@ -197,6 +197,19 @@ final class NonInteractiveModeTest extends TestCase
         ];
     }
 
+    public function testOracleServiceNameWithDomainIsAccepted(): void
+    {
+        $params = $this->collect(['db' => 'oracle', 'database' => 'FONDS.exemple.fr']);
+
+        $this->assertSame('FONDS.exemple.fr', $params['database']);
+        $this->assertSame('oracle', $params['dbType']);
+    }
+
+    public function testMisplacedDotsInDatabaseNameAreStillRejected(): void
+    {
+        $this->assertInvalid(['database' => 'svc..prod'], 'Nom de base de données invalide');
+        $this->assertInvalid(['database' => '.svc'], 'Nom de base de données invalide');
+    }
     /** @dataProvider invalidPorts */
     public function testInvalidPortsGiveAValidationErrorNotATypeError(string|int $port): void
     {
