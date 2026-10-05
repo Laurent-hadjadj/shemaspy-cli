@@ -29,6 +29,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Corrigé
 
+- `bin/schemaspy.bat` ne fonctionnait pas (« 'SchemaSpy' n'est pas reconnu en tant que commande interne ou externe ») : fichier en LF avec des accents dans un `rem`. Réécrit en ASCII/CRLF, message clair si PHP est absent du PATH, code de retour propagé. `.gitattributes` fixe CRLF pour `*.bat` et LF pour `bin/schemaspy` ; `LauncherTest` verrouille ces règles.
 - 🛠️ Chemins relatifs de `config.json` (`jdbc/`, `tools/`...) : le base path est défini avant la détection du JDK et le scan des drivers, l'outil ne dépend plus du répertoire courant.
 - 🛠️ `DriverManager` : un bloc `jdbc_validation` partiel dans `config.json` provoquait « Undefined array key » ; les clés absentes prennent maintenant leur valeur par défaut.
 - 🛠️ `Environment` : `trim(null)` (dépréciation PHP 8.1+) quand `where`/`which` ne trouvent rien.

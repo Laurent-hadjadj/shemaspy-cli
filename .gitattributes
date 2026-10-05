@@ -1,1 +1,7 @@
- * text=auto eol=lf
+* text=auto eol=lf
+
+# Lanceur Windows : doit rester en CRLF et en ASCII (cmd.exe interprete mal LF et les accents)
+*.bat text eol=crlf
+
+# Point d entree PHP : le shebang exige LF (sinon "php\r" sous Linux/macOS)
+bin/schemaspy text eol=lf
