@@ -41,8 +41,14 @@ final class Logger
     /** @var resource|null */
     private $inputStream = null;
 
-    public function __construct(private bool $forceColor = false, ?string $logFile = null)
+    private string $osFamily;
+
+    /**
+     * @param string|null $osFamily famille d'OS simulée (tests) ; PHP_OS_FAMILY par défaut
+     */
+    public function __construct(private bool $forceColor = false, ?string $logFile = null, ?string $osFamily = null)
     {
+        $this->osFamily = $osFamily ?? PHP_OS_FAMILY;
         $this->colorSupport = $this->forceColor || $this->supportsColor();
 
         if ($logFile !== null && $this->initLogFile($logFile)) {
@@ -170,7 +176,7 @@ final class Logger
         }
 
         // Sur Windows
-        if (PHP_OS_FAMILY === 'Windows') {
+        if ($this->osFamily === 'Windows') {
             // Vérifier si on est dans PowerShell
             if (getenv('PSModulePath') !== false) {
                 // PowerShell 5.1+ supporte les couleurs
@@ -442,6 +448,20 @@ final class Logger
     }
 
     /**
+     * Largeur d'affichage d'un texte, en caractères : « très » fait 4 colonnes, pas 5 (octets UTF-8).
+     */
+    private function textWidth(string $text): int
+    {
+        return function_exists('mb_strlen') ? mb_strlen($text) : strlen($text);
+    }
+
+    /** Complète à droite avec des espaces jusqu'à la largeur voulue, en comptant les caractères. */
+    private function padRight(string $text, int $width): string
+    {
+        return $text . str_repeat(' ', max(0, $width - $this->textWidth($text)));
+    }
+
+    /**
      * [Description for table]
      *
      * @param array $headers
@@ -467,10 +487,10 @@ final class Logger
         // Calculer la largeur des colonnes
         $colWidths = [];
         foreach ($headers as $i => $header) {
-            $colWidths[$i] = strlen($header);
+            $colWidths[$i] = $this->textWidth($header);
             foreach ($rows as $row) {
                 if (isset($row[$i])) {
-                    $colWidths[$i] = max($colWidths[$i], strlen((string)$row[$i]));
+                    $colWidths[$i] = max($colWidths[$i], $this->textWidth((string) $row[$i]));
                 }
             }
         }
@@ -478,7 +498,7 @@ final class Logger
         // Afficher l'en-tête
         $headerLine = '| ';
         foreach ($headers as $i => $header) {
-            $headerLine .= str_pad($header, $colWidths[$i]) . ' | ';
+            $headerLine .= $this->padRight($header, $colWidths[$i]) . ' | ';
         }
         $this->output($headerLine, 'white');
 
@@ -490,7 +510,7 @@ final class Logger
             $line = '| ';
             foreach ($headers as $i => $header) {
                 $value = $row[$i] ?? '';
-                $line .= str_pad($value, $colWidths[$i]) . ' | ';
+                $line .= $this->padRight((string) $value, $colWidths[$i]) . ' | ';
             }
             $this->output($line, 'default');
         }
@@ -605,7 +625,7 @@ final class Logger
         }
 
         // Sur Unix avec readline, on masque la saisie
-        if (PHP_OS_FAMILY !== 'Windows'
+        if ($this->osFamily !== 'Windows'
             && function_exists('readline')
             && $inputStream === null
             && $this->inputStream === null
@@ -730,6 +750,13 @@ final class Logger
         if ($this->quiet) {
             return;
         }
+
+        // Total nul : rien à afficher (division par zéro) ; avancement borné à [0, total]
+        // (str_repeat() lève une ValueError sur un nombre négatif)
+        if ($total <= 0) {
+            return;
+        }
+        $current = max(0, min($current, $total));
 
         $percent = round(($current / $total) * 100);
         $barLength = 40;
