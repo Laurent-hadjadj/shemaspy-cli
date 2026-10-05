@@ -153,4 +153,21 @@ final class ConnectionTest extends TestCase
             $this->assertSame(Connection::MODE_PDO, $connection->getMode());
         }
     }
+
+    /** @dataProvider oracleTypes */
+    public function testEveryOracleTypeUsesPdoOciAndDualProbe(string $dbType): void
+    {
+        $connection = $this->connection($dbType);
+        $probe = new \ReflectionMethod(Connection::class, 'testQuery');
+        $dsn = new \ReflectionMethod(Connection::class, 'buildDSN');
+
+        $this->assertSame('oci', $connection->getPdoDriverName());
+        $this->assertSame('SELECT 1 FROM DUAL', $probe->invoke($connection));
+        $this->assertSame('oci:dbname=//127.0.0.1:1/x;charset=AL32UTF8', $dsn->invoke($connection));
+    }
+
+    public static function oracleTypes(): array
+    {
+        return [['oracle'], ['oracle_service']];
+    }
 }

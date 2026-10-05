@@ -406,7 +406,8 @@ Options:
   --verbose, -v           Mode verbeux (affiche plus de détails)
   --config=FILE           Fichier de configuration (défaut: config/config.json)
 
-  --db=TYPE               Type de base de données (postgresql, oracle, mysql) [défaut: postgresql]
+  --db=TYPE               Type de base de données : clé de "jdbc" dans config.json
+                          (postgresql, oracle = SID, oracle_service = nom de service, mysql...) [défaut: postgresql]
   --host=HOST             Hôte de la base de données
   --port=PORT             Port de la base de données
   --database=DB           Nom de la base de données
@@ -438,8 +439,11 @@ Exemples:
   # Mode non-interactif - MySQL
   php bin/schemaspy --quiet --db=mysql --host=localhost --database=demo --schema=demo --user=root --password=xxx
 
-  # Mode non-interactif - Oracle
+  # Mode non-interactif - Oracle (SID)
   php bin/schemaspy --quiet --db=oracle --host=localhost --database=XE --schema=SYSTEM --user=system --password=xxx
+
+  # Mode non-interactif - Oracle (nom de service, avec domaine possible)
+  php bin/schemaspy --quiet --db=oracle_service --host=localhost --database=FONDS.exemple.fr --schema=APP --user=app --password=xxx
 
   # Avec configuration personnalisée
   php bin/schemaspy --config=config/prod.json

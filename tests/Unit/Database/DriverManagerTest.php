@@ -203,4 +203,27 @@ final class DriverManagerTest extends TestCase
         $this->expectException(\RuntimeException::class);
         new DriverManager(new Config(), $this->logger);
     }
+
+    public function testTypesSharingTheSameJarAreReportedOnce(): void
+    {
+        $this->config->set('jdbc.oracle_service', $this->config->get('jdbc.oracle'));
+
+        $manager = $this->manager();
+        $missingOracle = array_filter($manager->getMissingDrivers(), fn($d) => $d['driver'] === 'ojdbc11-23.26.3.0.0.jar');
+
+        $this->assertCount(1, $missingOracle, 'le JAR partagé n\'est listé qu\'une fois');
+        $this->assertSame(4, substr_count($manager->getValidationSummary(), "\n") , '4 JAR distincts, pas 5');
+    }
+
+    public function testTypesSharingTheSameJarResolveTheSameDriver(): void
+    {
+        $this->config->set('jdbc.oracle_service', $this->config->get('jdbc.oracle'));
+        $this->tmp->file('jdbc/ojdbc11-23.26.3.0.0.jar');
+
+        $manager = $this->manager();
+
+        $this->assertTrue($manager->hasDriver('oracle'));
+        $this->assertTrue($manager->hasDriver('oracle_service'));
+        $this->assertSame($manager->getDriverPath('oracle'), $manager->getDriverPath('oracle_service'));
+    }
 }

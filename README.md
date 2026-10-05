@@ -165,6 +165,17 @@ php src/bootstrap.php --quiet \
 | `--vizjs=true\|false` | (déprécié) équivaut à `--engine=vizjs` | — |
 | `--output=DOSSIER` | Nom du dossier de sortie | généré (`{dbType}_{schema}_{timestamp}`) |
 
+#### Oracle : SID ou nom de service
+
+Deux types Oracle sont livrés (même JAR `ojdbc11`), à choisir selon la façon dont la base est identifiée :
+
+| Type (`--db=`) | Type SchemaSpy | La valeur de `--database=` est… | URL JDBC |
+| --- | --- | --- | --- |
+| `oracle` | `orathin` | le **SID** (ex: `FONDSPRD`) | `jdbc:oracle:thin:@hôte:port:SID` |
+| `oracle_service` | `orathin-service` | le **nom de service**, domaine possible (ex: `FONDS.exemple.fr`) | `jdbc:oracle:thin:@//hôte:port/service` |
+
+Un nom de base peut contenir des points (mais ni commencer ni finir par un point, ni en contenir deux de suite). En cas d'erreur ORA-12505 (SID inconnu) ou ORA-12514 (service inconnu), essayez l'autre type. Sans l'extension PHP `pdo_oci`, seul l'accès réseau est testé avant le lancement ; l'authentification est validée par SchemaSpy.
+
 #### Options de génération
 
 Ces options s'appliquent aux modes interactif et non-interactif et peuvent aussi être fixées par défaut dans le bloc `generation` de `config/config.json` (la ligne de commande a priorité).

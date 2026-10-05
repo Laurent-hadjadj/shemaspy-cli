@@ -10,7 +10,7 @@
     "schemaspy": {
         "version": "7.0.3-lh.3",
         "jar": "jar/schemaspy-7.0.3-lh.3.jar",
-        "download_url": "",
+        "download_url": "https://github.com/Laurent-hadjadj/schemaspy/releases/download/v7.0.3-lh.3/schemaspy-7.0.3-lh.3.jar",
         "markdown_supported": true,
         "compatibility": {
             "6": "11",
@@ -55,7 +55,19 @@
             "status": "stable",
             "download_url": "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/23.26.3.0.0/ojdbc11-23.26.3.0.0.jar",
             "class": "oracle.jdbc.OracleDriver",
-            "notes": "Support Oracle 19c, 21c, 23c"
+            "notes": "Oracle 19c, 21c, 23c - identifie la base par son SID"
+        },
+        "oracle_service": {
+            "type": "orathin-service",
+            "port": 1521,
+            "driver": "ojdbc11-23.26.3.0.0.jar",
+            "version": "23.26.3.0.0",
+            "java_version": "8/11+",
+            "db_version": "19c-23c",
+            "status": "stable",
+            "download_url": "https://repo1.maven.org/maven2/com/oracle/database/jdbc/ojdbc11/23.26.3.0.0/ojdbc11-23.26.3.0.0.jar",
+            "class": "oracle.jdbc.OracleDriver",
+            "notes": "Oracle 19c, 21c, 23c - identifie la base par son nom de service (ex: FONDS.exemple.fr)"
         },
         "mysql": {
             "type": "mysql",

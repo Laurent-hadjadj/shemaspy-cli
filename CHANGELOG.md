@@ -6,6 +6,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Ajouté
 
+- Type `oracle_service` (SchemaSpy `orathin-service`, même JAR `ojdbc11`) pour les bases Oracle identifiées par un nom de service (`FONDS.exemple.fr`) ; `oracle` reste le type SID. Le test de connexion (`pdo_oci`, `SELECT 1 FROM DUAL`) s'applique à tout type dont le nom commence par `oracle`. Un JAR partagé par plusieurs types n'est validé et signalé comme manquant qu'une seule fois. `ShippedConfigTest` vérifie la cohérence de `config/config.json` (types, JAR, versions, URL de téléchargement).
 - Le fichier de log reçoit la progression de SchemaSpy (lignes `[SCHEMASPY]`), plus seulement les avertissements masqués : une analyse longue se suit dans `logs/schemaspy-cli.log`.
 - Avertissement viz.js : dans le menu du moteur, dans le récapitulatif interactif et avant toute exécution utilisant viz.js (choix explicite, `--vizjs=true` ou repli faute de Graphviz) : très lent et gourmand en mémoire sur les grands schémas.
 - ✅ Options de génération : `--engine=auto|graphviz|vizjs`, `--markdown`, `--no-html`, `--no-orphans`, `--no-views`, `--no-rows`, `--no-implied`, `--degree=1|2`, `--include=REGEX`, `--exclude=REGEX`. Valeurs par défaut dans le bloc `generation` de `config.json`.
@@ -55,6 +56,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Ajouté
 
+- Type `oracle_service` (SchemaSpy `orathin-service`, même JAR `ojdbc11`) pour les bases Oracle identifiées par un nom de service (`FONDS.exemple.fr`) ; `oracle` reste le type SID. Le test de connexion (`pdo_oci`, `SELECT 1 FROM DUAL`) s'applique à tout type dont le nom commence par `oracle`. Un JAR partagé par plusieurs types n'est validé et signalé comme manquant qu'une seule fois. `ShippedConfigTest` vérifie la cohérence de `config/config.json` (types, JAR, versions, URL de téléchargement).
 - Le fichier de log reçoit la progression de SchemaSpy (lignes `[SCHEMASPY]`), plus seulement les avertissements masqués : une analyse longue se suit dans `logs/schemaspy-cli.log`.
 - Avertissement viz.js : dans le menu du moteur, dans le récapitulatif interactif et avant toute exécution utilisant viz.js (choix explicite, `--vizjs=true` ou repli faute de Graphviz) : très lent et gourmand en mémoire sur les grands schémas.
 - ✅ Support de PosteGreSQL, Oracle et MySQL

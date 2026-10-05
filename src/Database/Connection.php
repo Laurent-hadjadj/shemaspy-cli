@@ -55,7 +55,7 @@ final class Connection
 
         return match (true) {
             $dbType === 'postgresql'            => 'pgsql',
-            $dbType === 'oracle'                => 'oci',
+            str_starts_with($dbType, 'oracle')   => 'oci',
             in_array($dbType, ['mysql', 'mariadb'], true) => 'mysql',
             str_starts_with($dbType, 'sqlserver') => 'sqlsrv',
             default                             => null,
@@ -156,7 +156,7 @@ final class Connection
     private function testQuery(): string
     {
         // Oracle n'accepte pas un SELECT sans FROM
-        return $this->params['dbType'] === 'oracle' ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
+        return str_starts_with((string) $this->params['dbType'], 'oracle') ? 'SELECT 1 FROM DUAL' : 'SELECT 1';
     }
 
     /**

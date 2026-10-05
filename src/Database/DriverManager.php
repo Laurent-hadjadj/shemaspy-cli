@@ -110,6 +110,11 @@ final class DriverManager
                 continue;
             }
 
+            // Plusieurs types peuvent partager un même JAR (oracle et oracle_service) : validé une seule fois
+            if (isset($this->validationResults[$driverName])) {
+                continue;
+            }
+
             $exists = isset($this->drivers[$driverName]);
             $this->validationResults[$driverName] = [
                 'db_type' => $dbType,
@@ -436,6 +441,7 @@ final class DriverManager
     public function getMissingDrivers(): array
     {
         $missing = [];
+        $listed = [];
         $jdbcConfig = $this->config->get('jdbc', []);
 
         foreach ($jdbcConfig as $dbType => $dbConfig) {
@@ -443,7 +449,8 @@ final class DriverManager
             if ($driverName === null) {
                 continue;
             }
-            if (!isset($this->drivers[$driverName])) {
+            if (!isset($this->drivers[$driverName]) && !isset($listed[$driverName])) {
+                $listed[$driverName] = true;
                 $missing[] = [
                     'db_type' => $dbType,
                     'driver' => $driverName,
