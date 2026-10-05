@@ -450,4 +450,53 @@ final class EnvironmentDiscoveryTest extends TestCase
         $this->assertStringContainsString(escapeshellarg($hostile), $env->commands[0]);
         $this->assertSame(1, substr_count($env->commands[0], 'echo PIRATE'));
     }
+
+    // --- branches propres à chaque système, testables depuis n'importe lequel --
+
+    public function testUnixBehaviourWhateverTheHostSystem(): void
+    {
+        $env = new ScriptedEnvironment(['/usr/bin/java'], 'Linux');
+
+        $this->assertSame('Linux', $env->getOsFamily());
+        $this->assertFalse($env->isWindows());
+        $this->assertSame(':', $env->getClasspathSeparator());
+        $this->assertStringEndsWith('java', $env->getJavaExecutable('/opt/jdk'));
+        $this->assertStringEndsNotWith('.exe', $env->getJavaExecutable('/opt/jdk'));
+        $this->assertStringEndsWith('dot', $env->getDotExecutable('/opt/gv'));
+        $this->assertSame($env->normalizePath('/usr'), $env->getJavaHome());
+        $this->assertSame('which java 2>/dev/null', $env->commands[0]);
+        $this->assertSame(php_uname('s') . ' ' . php_uname('r'), $env->getOsFullName());
+    }
+
+    public function testUnixLookupCommands(): void
+    {
+        $env = new ScriptedEnvironment(['/usr/bin/dot', '/usr/bin/git'], 'Linux');
+
+        $env->findGraphvizInPath();
+        $this->assertTrue($env->isCommandAvailable('git'));
+
+        $this->assertSame('which dot 2>/dev/null', $env->commands[0]);
+        $this->assertStringStartsWith('command -v ', $env->commands[1]);
+        $this->assertStringEndsWith(' 2>/dev/null', $env->commands[1]);
+    }
+
+    public function testWindowsBehaviourWhateverTheHostSystem(): void
+    {
+        $env = new ScriptedEnvironment(['C:\\jdk\\bin\\java.exe', 'C:\\gv\\bin\\dot.exe', 'C:\\Git\\git.exe'], 'Windows');
+
+        $this->assertSame('Windows', $env->getOsFamily());
+        $this->assertTrue($env->isWindows());
+        $this->assertSame(';', $env->getClasspathSeparator());
+        $this->assertStringEndsWith('java.exe', $env->getJavaExecutable('C:\\jdk'));
+        $this->assertStringEndsWith('dot.exe', $env->getDotExecutable('C:\\gv'));
+        $this->assertSame('Windows ' . php_uname('r'), $env->getOsFullName());
+
+        $env->getJavaHome();
+        $env->findGraphvizInPath();
+        $env->isCommandAvailable('git');
+        $this->assertSame('where java 2>nul', $env->commands[0]);
+        $this->assertSame('where dot 2>nul', $env->commands[1]);
+        $this->assertStringStartsWith('where ', $env->commands[2]);
+        $this->assertStringEndsWith(' 2>nul', $env->commands[2]);
+    }
 }

@@ -20,11 +20,17 @@ namespace SchemaSpyCli\Core;
 class Environment
 {
     private readonly bool $isWindows;
+    private readonly string $osFamily;
     private ?string $javaHomeCache = null;
 
-    public function __construct()
+    /**
+     * @param string|null $osFamily famille d'OS simulée (« Windows », « Linux »...), PHP_OS_FAMILY par défaut ;
+     *                              sert aux tests des branches propres à l'autre système
+     */
+    public function __construct(?string $osFamily = null)
     {
-        $this->isWindows = PHP_OS_FAMILY === 'Windows';
+        $this->osFamily = $osFamily ?? PHP_OS_FAMILY;
+        $this->isWindows = $this->osFamily === 'Windows';
     }
 
     /**
@@ -38,7 +44,7 @@ class Environment
      */
     public function getOsFamily(): string
     {
-        return PHP_OS_FAMILY;
+        return $this->osFamily;
     }
 
     /**

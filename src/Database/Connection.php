@@ -35,7 +35,8 @@ final class Connection
 
     public function __construct(
         private readonly array $params,
-        private readonly Logger $logger
+        private readonly Logger $logger,
+        private readonly ?\Closure $pdoFactory = null
     ) {
     }
 
@@ -51,14 +52,21 @@ final class Connection
      */
     public function getPdoDriverName(): ?string
     {
-        $dbType = (string) $this->params['dbType'];
+        return self::pdoDriverFor((string) $this->params['dbType']);
+    }
 
+    /**
+     * Pilote PDO (suffixe de l'extension « pdo_xxx ») utilisé pour tester la connexion à ce type de
+     * base : pgsql, oci, mysql, sqlsrv ; null pour un type inconnu.
+     */
+    public static function pdoDriverFor(string $dbType): ?string
+    {
         return match (true) {
-            $dbType === 'postgresql'            => 'pgsql',
-            str_starts_with($dbType, 'oracle')   => 'oci',
+            $dbType === 'postgresql'                      => 'pgsql',
+            str_starts_with($dbType, 'oracle')            => 'oci',
             in_array($dbType, ['mysql', 'mariadb'], true) => 'mysql',
-            str_starts_with($dbType, 'sqlserver') => 'sqlsrv',
-            default                             => null,
+            str_starts_with($dbType, 'sqlserver')         => 'sqlsrv',
+            default                                       => null,
         };
     }
 
@@ -109,7 +117,8 @@ final class Connection
         try {
             $timeout = (int) ($this->params['timeout'] ?? 5);
 
-            $this->pdo = new \PDO($this->buildDSN(), $this->params['user'], $this->params['password'], [
+            $factory = $this->pdoFactory ?? static fn(string $dsn, string $user, string $password, array $options): \PDO => new \PDO($dsn, $user, $password, $options);
+            $this->pdo = $factory($this->buildDSN(), $this->params['user'], $this->params['password'], [
                 \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                 \PDO::ATTR_TIMEOUT => $timeout,
             ]);

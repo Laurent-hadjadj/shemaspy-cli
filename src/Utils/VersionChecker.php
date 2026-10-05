@@ -105,6 +105,29 @@ final class VersionChecker
     }
 
     /**
+     * Pilotes PDO nécessaires au test de connexion de ces types de base, répartis en présents et
+     * absents (ex: pgsql, oci, mysql, sqlsrv). Un pilote absent n'est pas bloquant : la connexion est
+     * alors limitée à un test réseau, l'authentification étant validée par SchemaSpy via JDBC.
+     *
+     * @param list<string> $dbTypes clés de « jdbc » dans config.json (postgresql, oracle, oracle_service...)
+     * @return array{available: list<string>, missing: list<string>} sans doublon, dans l'ordre d'apparition
+     */
+    public function checkPdoDrivers(array $dbTypes): array
+    {
+        $isLoaded = $this->extensionLoaded ?? extension_loaded(...);
+        $report = ['available' => [], 'missing' => []];
+
+        foreach ($dbTypes as $dbType) {
+            $driver = \SchemaSpyCli\Database\Connection::pdoDriverFor((string) $dbType);
+            if ($driver === null || in_array($driver, $report['available'], true) || in_array($driver, $report['missing'], true)) {
+                continue;
+            }
+            $report[$isLoaded('pdo_' . $driver) ? 'available' : 'missing'][] = $driver;
+        }
+
+        return $report;
+    }
+    /**
      * [Description for getSchemaSpyVersion]
      *
      * @param string $jarFile

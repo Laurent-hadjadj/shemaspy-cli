@@ -15,6 +15,7 @@ namespace SchemaSpyCli\Tests\Unit\Database;
 
 use PHPUnit\Framework\TestCase;
 use SchemaSpyCli\Core\Logger;
+use SchemaSpyCli\Tests\Support\StubPdo;
 use SchemaSpyCli\Database\Connection;
 use SchemaSpyCli\Exceptions\ConnectionException;
 
@@ -169,5 +170,67 @@ final class ConnectionTest extends TestCase
     public static function oracleTypes(): array
     {
         return [['oracle'], ['oracle_service']];
+    }
+
+    // --- connexion réussie / échouée via une fabrique PDO injectée (faux PDO, aucun pilote requis)
+
+    private function pgsqlConnection(\Closure $factory): Connection
+    {
+        if (!extension_loaded('pdo_pgsql')) {
+            $this->markTestSkipped('pdo_pgsql requis : sans lui la connexion se limite à un test TCP.');
+        }
+
+        return new Connection([
+            'dbType' => 'postgresql', 'host' => 'db.local', 'port' => 5432, 'database' => 'demo',
+            'user' => 'scott', 'password' => 'tiger', 'timeout' => 7,
+        ], new Logger(true), $factory);
+    }
+
+    public function testSuccessfulConnectionExposesThePdoAndServerInformation(): void
+    {
+        $received = [];
+        $stub = new StubPdo();
+        $connection = $this->pgsqlConnection(function (string $dsn, string $user, string $password, array $options) use (&$received, $stub): \PDO {
+            $received = compact('dsn', 'user', 'password', 'options');
+            return $stub;
+        });
+
+        $this->assertTrue($connection->test());
+
+        $this->assertSame(Connection::MODE_PDO, $connection->getMode());
+        $this->assertSame($stub, $connection->getPdo());
+        $this->assertSame('stub', $connection->getDriverInfo());
+        $this->assertSame('9.9.9-stub', $connection->getServerInfo());
+        $this->assertSame(['SELECT 1'], $stub->queries, 'requête de test PostgreSQL');
+        $this->assertSame('pgsql:host=db.local;port=5432;dbname=demo', $received['dsn']);
+        $this->assertSame('scott', $received['user']);
+        $this->assertSame('tiger', $received['password']);
+        $this->assertSame(\PDO::ERRMODE_EXCEPTION, $received['options'][\PDO::ATTR_ERRMODE]);
+        $this->assertSame(7, $received['options'][\PDO::ATTR_TIMEOUT], 'le délai configuré est transmis');
+    }
+
+    public function testDriverErrorsBecomeConnectionExceptions(): void
+    {
+        $connection = $this->pgsqlConnection(function (): \PDO {
+            throw new \PDOException('SQLSTATE[08006] connexion refusée', 7);
+        });
+
+        try {
+            $connection->test();
+            $this->fail('ConnectionException attendue');
+        } catch (ConnectionException $e) {
+            $this->assertStringContainsString('connexion refusée', $e->getMessage());
+            $this->assertSame(7, $e->getCode());
+            $this->assertInstanceOf(\PDOException::class, $e->getPrevious());
+        }
+    }
+
+    public function testProbeQueryFailureIsAlsoAConnectionError(): void
+    {
+        $connection = $this->pgsqlConnection(fn(): \PDO => new StubPdo(failOnQuery: true));
+
+        $this->expectException(ConnectionException::class);
+        $this->expectExceptionMessage('requête de test refusée');
+        $connection->test();
     }
 }

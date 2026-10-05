@@ -28,9 +28,9 @@ final class ScriptedEnvironment extends Environment
     public array $commands = [];
 
     /** @param list<string> $outputs */
-    public function __construct(private array $outputs = [''])
+    public function __construct(private array $outputs = [''], ?string $osFamily = null)
     {
-        parent::__construct();
+        parent::__construct($osFamily);
     }
 
     protected function runCommand(string $command): string
