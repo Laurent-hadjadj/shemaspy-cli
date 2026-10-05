@@ -82,4 +82,34 @@ final class GenerationOptionsTest extends TestCase
         $this->expectException(ValidationException::class);
         GenerationOptions::fromArrays(['include' => '(unclosed']);
     }
+
+    /** @dataProvider booleanStrings */
+    public function testBooleanLikeStringsAreInterpreted(string $value, bool $expected): void
+    {
+        $options = GenerationOptions::fromArrays(['markdown' => $value, 'html' => 'true']);
+
+        $this->assertSame($expected, $options->markdown);
+    }
+
+    public static function booleanStrings(): array
+    {
+        return [
+            'true' => ['true', true], 'TRUE' => ['TRUE', true], '1' => ['1', true], 'yes' => ['yes', true],
+            'oui'  => ['oui', true],  'Oui'  => ['Oui', true],  'on' => ['on', true], 'ON' => ['ON', true],
+            'false' => ['false', false], '0' => ['0', false], 'no' => ['no', false], 'non' => ['non', false],
+            'off'  => ['off', false], 'inconnu' => ['peut-etre', false],
+        ];
+    }
+
+    public function testEveryFilterAcceptsBooleanStrings(): void
+    {
+        $options = GenerationOptions::fromArrays([
+            'orphans' => 'non', 'views' => 'no', 'rows' => '0', 'implied' => 'off',
+        ]);
+
+        $this->assertFalse($options->orphans);
+        $this->assertFalse($options->views);
+        $this->assertFalse($options->rows);
+        $this->assertFalse($options->implied);
+    }
 }

@@ -239,4 +239,18 @@ final class PathFinderTest extends TestCase
         $this->assertNull($finder->detectGraphviz());
         $this->assertSame(1, $env->graphvizPathCalls);
     }
+
+    public function testFailedDotProvisioningIsLoggedAndGraphvizIsNotDetected(): void
+    {
+        // « dot_builtins » existe mais n'est pas copiable (c'est un dossier) : copy() échoue
+        $this->tmp->dir('tools/graphviz/bin/' . $this->dotName('dot_builtins'));
+        $logFile = $this->tmp->path . '/pathfinder.log';
+        $logger = new Logger(false, $logFile);
+        $logger->setQuiet(true);
+
+        $gv = (new PathFinder($this->config, $logger, new FakeEnvironment()))->detectGraphviz();
+
+        $this->assertNull($gv);
+        $this->assertStringContainsString('Impossible de créer', (string) file_get_contents($logFile));
+    }
 }

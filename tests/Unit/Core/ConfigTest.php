@@ -232,4 +232,102 @@ final class ConfigTest extends TestCase
     {
         $this->assertSame('tools/jdk17', (new Config())->getAbsolutePath('tools/jdk17'));
     }
+
+    // --- chargement : erreurs et valeurs par défaut ----------------------
+
+    private function loadJson(string $content): Config
+    {
+        $file = sys_get_temp_dir() . '/cfg_test_' . uniqid() . '.json';
+        file_put_contents($file, $content);
+        try {
+            $config = new Config();
+            $config->load($file);
+            return $config;
+        } finally {
+            @unlink($file);
+        }
+    }
+
+    /** @dataProvider brokenConfigs */
+    public function testBrokenConfigurationFilesAreRejected(string $content, string $messagePart): void
+    {
+        $this->expectException(\SchemaSpyCli\Exceptions\ConfigException::class);
+        $this->expectExceptionMessage($messagePart);
+        $this->loadJson($content);
+    }
+
+    public static function brokenConfigs(): array
+    {
+        return [
+            'fichier vide'          => ['', 'fichier vide'],
+            'espaces seulement'     => ["  \n\t ", 'fichier vide'],
+            'JSON invalide'         => ['{ "jdbc": ', 'Erreur de parsing'],
+            'JSON null'             => ['null', 'racine non objet'],
+            'nombre'                => ['42', 'racine non objet'],
+            'chaîne'                => ['"texte"', 'racine non objet'],
+            'jdbc manquant'         => ['{"paths": {}}', "'jdbc' manquant"],
+        ];
+    }
+
+    public function testMissingFileIsReported(): void
+    {
+        $this->expectException(\SchemaSpyCli\Exceptions\ConfigException::class);
+        $this->expectExceptionMessage('introuvable');
+        (new Config())->load(sys_get_temp_dir() . '/absent_' . uniqid() . '.json');
+    }
+
+    public function testMissingPathsSectionGetsTheDefaults(): void
+    {
+        $config = $this->loadJson('{"jdbc": {"postgresql": {}}}');
+
+        $this->assertSame('jdbc', $config->getPath('jdbc_folder'));
+        $this->assertSame('report', $config->getPath('output_folder'));
+        $this->assertSame('jdk17', $config->getPath('java_folder'));
+        $this->assertSame('graphviz-2.38', $config->getPath('graphviz_folder'));
+    }
+
+    public function testConfiguredPathsOverrideTheDefaultsAndOthersAreCompleted(): void
+    {
+        $config = $this->loadJson('{"jdbc": {}, "paths": {"java_folder": "tools/jdk21"}}');
+
+        $this->assertSame('tools' . DIRECTORY_SEPARATOR . 'jdk21', $config->getPath('java_folder'));
+        $this->assertSame('jdbc', $config->getPath('jdbc_folder'), 'valeur par défaut complétée');
+    }
+
+    // --- has / valeurs par défaut -----------------------------------------
+
+    public function testHasReportsExistingAndMissingKeys(): void
+    {
+        $config = $this->loadJson('{"jdbc": {"oracle": {"port": 1521}}, "application": {"name": "App"}}');
+
+        $this->assertTrue($config->has('application'));
+        $this->assertTrue($config->has('application.name'));
+        $this->assertTrue($config->has('jdbc.oracle.port'));
+        $this->assertFalse($config->has('application.version'));
+        $this->assertFalse($config->has('jdbc.oracle.port.inexistant'));
+        $this->assertFalse($config->has('absent'));
+        $this->assertFalse($config->has('absent.profond.encore'));
+    }
+
+    public function testApplicationVersionDefault(): void
+    {
+        $this->assertSame('1.0.0', (new Config())->getApplicationVersion());
+        $this->assertSame('3.2.1', $this->loadJson('{"jdbc": {}, "application": {"version": "3.2.1"}}')->getApplicationVersion());
+    }
+
+    public function testValidationConfigDefaultsAndOverride(): void
+    {
+        $default = (new Config())->getValidationConfig();
+
+        $this->assertTrue($default['enabled']);
+        $this->assertFalse($default['check_checksum']);
+        $this->assertTrue($default['check_version']);
+        $this->assertTrue($default['warn_on_extra']);
+        $this->assertFalse($default['strict_mode']);
+        $this->assertTrue($default['warn_obsolete']);
+        $this->assertFalse($default['cleanup_unused']);
+
+        $custom = $this->loadJson('{"jdbc": {}, "jdbc_validation": {"enabled": false}}')->getValidationConfig();
+        $this->assertSame(['enabled' => false], $custom);
+    }
 }

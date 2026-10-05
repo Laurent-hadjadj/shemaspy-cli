@@ -232,4 +232,24 @@ final class PropertiesGeneratorTest extends TestCase
 
         $this->assertStringContainsString('# Driver JDBC: postgresql-42.7.13.jar', $content);
     }
+
+    /** @dataProvider driverSizes */
+    public function testDriverSizeIsHumanReadableInTheHeader(int $bytes, string $expected): void
+    {
+        $this->tmp->file('jdbc/postgresql-42.7.13.jar', str_repeat('x', $bytes));
+
+        [, $content] = $this->generate();
+
+        $this->assertStringContainsString("# Taille: {$expected}", $content);
+    }
+
+    public static function driverSizes(): array
+    {
+        return [
+            'quelques octets' => [500, '500 B'],
+            'un kilo-octet'   => [1024, '1 KB'],
+            'quelques Ko'     => [3000, '2.93 KB'],
+            'un mega-octet'   => [1024 * 1024, '1 MB'],
+        ];
+    }
 }

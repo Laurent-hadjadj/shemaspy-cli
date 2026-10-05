@@ -130,4 +130,21 @@ final class ProcessRunnerTest extends TestCase
         $runner->run('commande-quelconque', static function (): void {
         });
     }
+
+    /** Aucune stratégie ne peut démarrer une commande de 40 000 caractères sous Windows (limite CreateProcess). */
+    public function testCommandTooLongForTheSystemRaisesAnExplicitError(): void
+    {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $this->markTestSkipped('Limite de longueur de commande propre à Windows.');
+        }
+
+        try {
+            (new ProcessRunner())->run(str_repeat('a', 40000), static function (): void {
+            });
+            $this->fail('RuntimeException attendue');
+        } catch (\RuntimeException $e) {
+            $this->assertStringContainsString('Impossible de lancer le processus', $e->getMessage());
+            $this->assertStringContainsString('proc_open', $e->getMessage());
+        }
+    }
 }

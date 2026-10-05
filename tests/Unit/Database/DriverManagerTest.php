@@ -226,4 +226,58 @@ final class DriverManagerTest extends TestCase
         $this->assertTrue($manager->hasDriver('oracle_service'));
         $this->assertSame($manager->getDriverPath('oracle'), $manager->getDriverPath('oracle_service'));
     }
+
+    // --- compléments de couverture ----------------------------------------
+
+    public function testConfigEntryWithoutDriverIsIgnored(): void
+    {
+        $this->config->set('jdbc.sans_driver', ['type' => 'x', 'port' => 1]);
+        $this->tmp->file('jdbc/postgresql-42.7.13.jar');
+
+        $manager = $this->manager();
+
+        $this->assertArrayNotHasKey('', $manager->getValidationResults());
+        $this->assertNull($manager->getDriver('sans_driver'));
+        foreach ($manager->getMissingDrivers() as $missing) {
+            $this->assertNotSame('sans_driver', $missing['db_type']);
+        }
+    }
+
+    public function testUnconfiguredJarIsReportedAsExtra(): void
+    {
+        $logFile = $this->tmp->path . '/dm.log';
+        $logger = new Logger(false, $logFile);
+        $logger->setQuiet(true);
+        $this->tmp->file('jdbc/postgresql-42.7.13.jar');
+        $this->tmp->file('jdbc/ojdbc6.jar');
+
+        new DriverManager($this->config, $logger);
+
+        $this->assertStringContainsString('Driver supplémentaire trouvé: ojdbc6.jar', (string) file_get_contents($logFile));
+    }
+
+    public function testExtraJarWarningCanBeDisabled(): void
+    {
+        $this->config->set('jdbc_validation', ['enabled' => true, 'warn_on_extra' => false, 'check_version' => false]);
+        $logFile = $this->tmp->path . '/dm.log';
+        $logger = new Logger(false, $logFile);
+        $logger->setQuiet(true);
+        $this->tmp->file('jdbc/ojdbc6.jar');
+
+        new DriverManager($this->config, $logger);
+
+        $this->assertStringNotContainsString('Driver supplémentaire', (string) file_get_contents($logFile));
+    }
+
+    public function testChecksumOfAnUnknownOrVanishedDriverIsFalse(): void
+    {
+        $file = $this->tmp->file('jdbc/postgresql-42.7.13.jar', 'x');
+        $manager = $this->manager();
+        $check = new \ReflectionMethod(DriverManager::class, 'checkChecksum');
+
+        $this->assertFalse($check->invoke($manager, 'inconnu.jar', 'sha256:' . str_repeat('0', 64)), 'driver non listé');
+
+        unlink($file); // listé au démarrage, supprimé ensuite
+        $this->assertFalse($check->invoke($manager, 'postgresql-42.7.13.jar', 'sha256:' . hash('sha256', 'x')));
+    }
 }
