@@ -305,4 +305,52 @@ final class RunnerTest extends TestCase
 
         $this->assertSame(0, $code);
     }
+
+    public function testSchemaSpyProgressIsWrittenToLogFile(): void
+    {
+        $process = new FakeProcessRunner(array_merge(
+            ["INFO  - Starting schema analysis\n", "..", "INFO  - Connected to Oracle\n"],
+            self::NOISE,
+            ["\n", "INFO  - Wrote 3 pages\n"]
+        ));
+
+        $this->execute($this->runner($process), $this->params());
+
+        $log = file_get_contents($this->logFile);
+        $this->assertStringContainsString('[SCHEMASPY] INFO  - Starting schema analysis', $log);
+        $this->assertStringContainsString('[SCHEMASPY] INFO  - Connected to Oracle', $log);
+        $this->assertStringContainsString('[SCHEMASPY] INFO  - Wrote 3 pages', $log);
+        $this->assertSame(2, substr_count($log, 'cell size too small') + substr_count($log, 'in label of node'), 'avertissements masqués journalisés une seule fois chacun');
+        $this->assertDoesNotMatchRegularExpression('/\[SCHEMASPY\] \.+\s*$/m', $log, 'les points de progression seuls ne sont pas journalisés');
+    }
+
+    public function testVerboseModeAlsoLogsProgressWithoutDuplicates(): void
+    {
+        $this->logger->setVerbose(true);
+
+        $this->execute($this->runner(new FakeProcessRunner(["INFO  - Une seule fois\n"])), $this->params());
+
+        $this->assertSame(1, substr_count(file_get_contents($this->logFile), '[SCHEMASPY] INFO  - Une seule fois'));
+    }
+
+    public function testVizJsEngineTriggersASlownessWarningBeforeRunning(): void
+    {
+        [$code, $output] = $this->execute($this->runner(new FakeProcessRunner()), $this->params(['useVizJs' => true]));
+
+        $this->assertSame(0, $code);
+        $this->assertStringContainsString('Moteur viz.js : très lent', $output);
+        $this->assertStringContainsString('--engine=graphviz', $output);
+        $this->assertLessThan(
+            strpos($output, 'Documentation générée'),
+            strpos($output, 'Moteur viz.js'),
+            'l\'avertissement précède la génération'
+        );
+    }
+
+    public function testNoVizJsWarningWithGraphviz(): void
+    {
+        [, $output] = $this->execute($this->runner(new FakeProcessRunner()), $this->params(['useVizJs' => false]));
+
+        $this->assertStringNotContainsString('Moteur viz.js', $output);
+    }
 }

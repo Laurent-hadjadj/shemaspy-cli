@@ -1,43 +1,50 @@
-# SchemaSpy CLI
+# ShemaSpy CLI
 
 ┏┓┏┓┏┓━┏━━┓━┏━━━┓\
 ┃┃┃┃┃┃━┗┫┣┛━┃┏━┓┃\
 ┃┃┃┃┃┃━━┃┃━━┃┗━┛┃\
 ┃┗┛┗┛┃━━┃┃━━┃┏━━┛\
 ┗┓┏┓┏┛━┏┫┣┓━┃┃\
-━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.0.0 Release on October 2026 !
+━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.1.0 Release on October 2026 !
 
-Application PHP (`mamoulinette/schemaspy-cli`) qui pilote [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.2 (Java) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
-
-Ce document décrit l'état du code. Une section [Limitations connues](#limitations-connues) liste les écarts identifiés entre ce qui est censé fonctionner et ce qui fonctionne effectivement aujourd'hui — à lire avant de déployer.
+ShemaSpy-cli est une application PHP qui pilote l'application [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.2 (Java) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
 
 ## Sommaire
 
-- [Prérequis](#prérequis)
-- [Installation](#installation)
-- [Comment l'application trouve ses fichiers](#comment-lapplication-trouve-ses-fichiers)
-- [Configuration](#configuration)
-- [Utilisation](#utilisation)
-- [Gestion des drivers JDBC](#gestion-des-drivers-jdbc)
-- [Tests](#tests)
-- [Docker](#docker)
-- [Architecture du code](#architecture-du-code)
-- [Dépannage](#dépannage)
-- [Limitations connues](#limitations-connues)
+- [1️⃣ Prérequis](#1️⃣-prérequis)
+- [2️⃣ Installation](#2️⃣-installation)
+- [3️⃣ Comment l'application trouve ses fichiers](#3️⃣-comment-lapplication-trouve-ses-fichiers)
+- [4️⃣ Configuration](#4️⃣-configuration)
+- [5️⃣ Utilisation](#5️⃣-utilisation)
+- [6️⃣ Graphviz](#6️⃣-graphviz)
+- [7️⃣ Gestion des drivers JDBC](#7️⃣-gestion-des-drivers-jdbc)
+- [8️⃣ Tests](#8️⃣-tests)
+- [9️⃣ Docker](#9️⃣-docker)
+- [🔟 Architecture du code](#-architecture-du-code)
+- [🔟+1️⃣ Dépannage](#1️⃣-dépannage)
+- [🔟+2️⃣ Limitations connues](#2️⃣limitations-connues)
 
-## Prérequis
+## 1️⃣ Prérequis
+
+> [!NOTE]
+> Cette version de shameSpy-cli est conçue pour fonctionner avec SchemaSpy 7.0.2 (Java 17) et la version 7.0.3-lh-2. La version 7.0.3-lh-2 est un fork. Elle corrige des bugs de génération de diagrammes sur Windows et ajoute l'option Markdown.
 
 | Composant | Version minimale | Rôle |
 | --- | --- | --- |
-| PHP | 8.1 (CLI) | Exécute l'application |
+| PHP | 8.5 (CLI) | Exécute l'application |
 | Extensions PHP | `pdo`, `json`, + le(s) driver(s) PDO du/des SGBD ciblé(s) (`pdo_pgsql`, `pdo_mysql`, `pdo_oci`...) | Test de connexion avant de lancer SchemaSpy |
 | Java (JRE/JDK) | 17 (JDK 8/11 du système ignoré au profit de `tools/jdk17`) | Exécute le JAR SchemaSpy |
 | Composer | — | Installation des dépendances PHP |
-| Graphviz | 2.38+ (optionnel, 16.1.0 embarqué dans `tools/`) | Diagrammes de relations en image native ; à défaut, l'application bascule automatiquement sur viz.js (rendu SVG côté navigateur). Voir [Graphviz](#graphviz) |
+| [Graphviz](#6️⃣-graphviz) | 2.38/16.1.0 | Génération des graphiques |
 
-Ces prérequis sont vérifiés automatiquement au lancement (hors mode `--quiet`) et signalés sous forme d'avertissements — l'application ne bloque pas dessus, sauf pour la connexion à la base de données elle-même.
+> [!NOTE]
+> Ces prérequis sont vérifiés automatiquement au lancement (hors mode `--quiet`) et signalés sous forme d'avertissements — l'application ne bloque pas dessus, sauf pour la connexion à la base de données elle-même.
 
-## Installation
+## 2️⃣ Installation
+
+> [!TIP]
+> Un seul point d'entrée : `bin/schemaspy` (PHP).\
+> `bin\schemaspy.bat` n'est qu'un lanceur Windows de deux lignes qui l'appelle.
 
 ```bash
 composer install --optimize-autoloader
@@ -50,16 +57,16 @@ bin/schemaspy --help          # Linux/Mac
 bin\schemaspy.bat --help      # Windows (ou : php bin/schemaspy --help)
 ```
 
-Un seul point d'entrée : `bin/schemaspy` (PHP). `bin\schemaspy.bat` n'est qu'un lanceur Windows de deux lignes qui l'appelle.
-
-## Comment l'application trouve ses fichiers
+## 3️⃣ Comment l'application trouve ses fichiers
 
 Au démarrage, `PathFinder::findEnvironmentPath()` cherche un dossier `paths.root_folder` (`environnement/tools` par défaut, voir `config/config.json`) :
 
 - **Windows** : parcourt les lettres de lecteur `C:` à `Z:` et retient la première où `<lettre>:/environnement/tools` existe.
 - **Unix/Linux** : cherche dans `/opt/environnement/tools`, `$HOME/environnement/tools`, puis `./environnement/tools`.
 
-Le dossier trouvé devient le **base path**. Tous les chemins relatifs de `config/config.json` (`schemaspy_folder`, `output_folder`, `java_folder`, `graphviz_folder`) sont ensuite résolus par rapport à ce base path — **pas** par rapport à la racine du dépôt Git. C'est une convention de déploiement : elle suppose qu'à côté du dépôt applicatif existe une arborescence partagée du type :
+Le dossier trouvé devient le **base path**. Tous les chemins relatifs de `config/config.json` (`schemaspy_folder`, `output_folder`, `java_folder`, `graphviz_folder`) sont ensuite résolus par rapport à ce base path — **pas** par rapport à la racine du dépôt Git.
+
+C'est une convention de déploiement : elle suppose qu'à côté du dépôt applicatif existe une arborescence partagée du type :
 
 ```plaintext
 <base path>/
@@ -67,6 +74,7 @@ Le dossier trouvé devient le **base path**. Tous les chemins relatifs de `confi
 ├── config/                          # Dossier des fichiers de configuration.
 ├── jar/                             # Le dossier contenant schemaspy.
     ├── schemaspy-7.0.2.jar
+    ├── schemaspy-7.0.3-lh-2.jar
 ├── jdbc/
     ├── mariadb-java-client-3.5.10.jar        # Driver pour MariaDB.
     ├── mssql-jdbc-13.6.0.jre8.jar            # Driver pour SQLServer (java8).
@@ -80,15 +88,24 @@ Le dossier trouvé devient le **base path**. Tous les chemins relatifs de `confi
 ├── tests                            # Dossier des tests unitaires.
 ├── tools                            # Dossier des dépendances windows partagées.
     ├── jdk17/                       # Optionnel : JDK17 pour windows
-    ├── graphviz-2.38/               # Optionnel : graphviz pour Windows
+    ├── graphviz-2.38/               # Optionnel : graphviz Legacy pour Windows
+    ├── graphviz-16.1.0/             # Optionnel : graphviz pour Windows
 └── vendor                           # Dossier des dépendances php partagées.
 ```
 
-Le fichier de configuration lui-même est cherché dans cet ordre : le chemin donné par `--config=`, puis `<dossier de bootstrap.php>/../../<chemin>`, puis `<cwd>/<chemin>`, puis `config/config.json` par défaut.
+Le fichier de configuration lui-même est cherché dans cet ordre :
 
-## Configuration
+- le chemin donné par `--config=`,
+- puis `<dossier de bootstrap.php>/../../<chemin>`,
+- puis `<cwd>/<chemin>`,
+- puis `config/config.json` par défaut.
 
-`config/config.json` centralise tout. Sections principales :
+## 4️⃣ Configuration
+
+> [!TIP]
+> `config/config.json` centralise tout.
+
+Sections principales :
 
 | Clé | Rôle |
 | --- | --- |
@@ -105,12 +122,12 @@ Les types de bases de données proposés en mode interactif et acceptés en mode
 
 Aucun secret n'est stocké dans `config/config.json` (les identifiants de connexion sont fournis à chaque exécution, en interactif ou via `--user`/`--password`).
 
-## Utilisation
+## 5️⃣ Utilisation
 
 ### Mode interactif
 
 ```bash
-bin/schemaspy
+php bin/schemaspy
 ```
 
 Le parcours est guidé en 4 étapes, avec une barre de progression (`Étape n/4`) :
@@ -164,7 +181,8 @@ Ces options s'appliquent aux modes interactif et non-interactif et peuvent aussi
 | `--degree=1\|2` | `-degree` : degré de séparation des diagrammes de table | `2` |
 | `--include=REGEX` / `--exclude=REGEX` | `-i` / `-I` : tables à garder / à écarter | toutes |
 
-**Markdown** : SchemaSpy 7.0.2 n'a pas d'export Markdown. L'option est fournie par le fork `7.0.3-lh.x` (option `-markdown`). Une fois ce JAR placé dans `jar/`, renseignez dans `config.json` : `schemaspy.jar`, `schemaspy.version` et `"markdown_supported": true`. Le fork `7.0.3-lh.2` (JAR `*-app.jar`, à renommer `schemaspy-7.0.3-lh.2.jar`) est la configuration livrée. Avec le JAR officiel 7.0.2, remettez `markdown_supported` à `false` : `--markdown` s'arrête alors avec un message explicite.
+**Markdown** : SchemaSpy 7.0.2 n'a pas d'export Markdown. L'option est fournie par le fork `7.0.3-lh.x` (option `-markdown`).
+Une fois ce JAR placé dans `jar/`, renseignez dans `config.json` : `schemaspy.jar`, `schemaspy.version` et `"markdown_supported": true`. Le fork `7.0.3-lh.2` (JAR `*-app.jar`, à renommer `schemaspy-7.0.3-lh.2.jar`) est la configuration livrée. Avec le JAR officiel 7.0.2, remettez `markdown_supported` à `false` : `--markdown` s'arrête alors avec un message explicite.
 
 En mode non-interactif, `host`, `database`, `schema`, `user` et `password` sont obligatoires ; leur absence fait échouer la validation avec un message listant les champs manquants.
 
@@ -188,16 +206,17 @@ Sur Windows, `bin\schemaspy.bat` appelle simplement `bin/schemaspy` (et force la
 
 Le rapport généré est disponible dans `<schemaspy_folder résolu>/<output_folder>/<nom de sortie>/index.html`.
 
-## Graphviz
+## 6️⃣ Graphviz
 
 L'application cherche Graphviz dans l'ordre : `PATH` système, `tools/graphviz-16.1.0` (`paths.graphviz_folder`), puis `paths.graphviz_home` de `config.json`.
 
 - Les archives ZIP Windows de Graphviz 15/16 ne contiennent plus `dot.exe`, seulement `dot_builtins.exe`. SchemaSpy appelant `<graphviz>/bin/dot`, l'application crée automatiquement `dot.exe` à partir de `dot_builtins.exe` dans le dossier embarqué `tools/`.
 - Le renderer `cairo` n'existe plus dans ces builds : `defaults.renderer` est vide par défaut (SchemaSpy choisit lui-même). Renseignez-le (`"gd"`, `"cairo"`...) seulement si votre Graphviz l'embarque.
+- **viz.js (`--engine=vizjs`)** : rendu JavaScript embarqué dans Java, utile sans Graphviz mais très lent et gourmand en mémoire sur un grand schéma (observé : un schéma Oracle de 300 tables, diagramme de relations non terminé après 30 minutes, 8 Go de mémoire). Préférez Graphviz natif au-delà de quelques dizaines de tables.
 - **Avertissements Graphviz** : Graphviz >= 15 émet un avertissement par table (`cell size too small for content`, `in label of node`) sans conséquence sur les diagrammes. Ils sont masqués et comptés en fin d'exécution ; `--verbose` les affiche, et le fichier de log les conserve.
 - **Graphviz 16.1.0 et SchemaSpy 7.0.2 (Windows)** : avec le JAR officiel 7.0.2, les diagrammes de résumé (`diagrams/summary/relationships.*.svg`) ne sont pas générés (`dot: can't open ... .dot: Permission denied`). Le fork `7.0.3-lh.2` n'a pas ce défaut ; avec le JAR 7.0.2, utilisez `--engine=vizjs`.
 
-## Gestion des drivers JDBC
+## 7️⃣ Gestion des drivers JDBC
 
 Les JAR JDBC vont dans le dossier `jdbc_folder` défini par la config (`jdbc/` par défaut, à la racine du dépôt). Au démarrage, `DriverManager` :
 
@@ -215,7 +234,7 @@ Scripts utilitaires (`php bin/<script>.php [chemin/vers/config.json]`) :
 | `bin/cleanup-drivers.php [--dry-run]` | Supprime les drivers marqués obsolètes dans `config.json` → `obsolete_drivers` ; `--dry-run` simule sans supprimer |
 | `bin/check-jdbc.sh` / `bin/cleanup.sh` | Équivalents shell pour environnements Unix |
 
-## Tests
+## 8️⃣ Tests
 
 ```bash
 composer test              # ou : vendor/bin/phpunit -c tests/phpunit.xml
@@ -225,11 +244,11 @@ vendor/bin/phpunit tests/Unit/Core/ConfigTest.php   # un fichier précis
 
 58 tests (unitaires + un test d'intégration sur `Runner`), organisés sous `tests/Unit/` et `tests/Integration/`. Le test `DSNBuilderTest::testGetConnectionOptionsMySQL` est ignoré automatiquement si l'extension `pdo_mysql` n'est pas chargée localement.
 
-## Docker
+## 9️⃣ Docker
 
-Un `DockerFile` (PHP 8.2-cli + Java 17 + Graphviz) et un `docker-compose.yml` (Postgres/MySQL/Oracle de test + service applicatif) existent dans le dépôt, mais **ne sont pas fonctionnels en l'état** — voir [Limitations connues](#limitations-connues).
+Todo : Le Dockerfile fourni est un exemple de conteneurisation pour CI/CD, mais il n'est pas officiellement supporté. Il installe PHP 8.5, les extensions PDO nécessaires, Java 17 et Graphviz, puis copie l'application et ses dépendances.
 
-## Architecture du code
+## 🔟 Architecture du code
 
 ```plaintext
 src/
@@ -246,29 +265,27 @@ src/
 └── bootstrap.php    # Autoload Composer + point d'entrée (`new Application())->run()`)
 ```
 
-Injection de dépendances manuelle (pas de conteneur), assemblée dans `Cli\Application::__construct()`/`initializeServices()`. PHP 8.1+ : propriétés en lecture seule (`readonly`) et promotion de propriétés de constructeur sur les dépendances injectées.
+Injection de dépendances manuelle (pas de conteneur), assemblée dans `Cli\Application::__construct()`/`initializeServices()`. PHP 8.5+ : propriétés en lecture seule (`readonly`) et promotion de propriétés de constructeur sur les dépendances injectées.
 
 Le fichier `.properties` généré pour SchemaSpy (qui contient le mot de passe en clair) est écrit dans le dossier temporaire système et systématiquement supprimé après exécution, y compris en cas d'erreur (`finally` dans `Runner::execute()`).
 
-## Dépannage
+## 🔟+1️⃣ Dépannage
 
 | Symptôme | Piste |
 | --- | --- |
-| `Dossier JDBC introuvable` / drivers à 0 | Le `jdbc_folder` résolu ne correspond pas à l'endroit où sont vos JAR — voir [Comment l'application trouve ses fichiers](#comment-lapplication-trouve-ses-fichiers) |
+| [Comment l'application trouve ses fichiers](#3️⃣-comment-lapplication-trouve-ses-fichiers) | `config.json` |
 | `Fichier introuvable: .../schemaspy-7.0.2.jar` | Le `schemaspy_folder` résolu ne pointe pas vers un dossier contenant le JAR ; ajustez `config.json` ou placez le JAR au bon endroit |
 | `Impossible de se connecter à ...` | Vérifiez l'accessibilité réseau de l'hôte/port et les identifiants (détail avec `--verbose`) |
 | `Extension PHP pdo_xxx absente : serveur joignable, identifiants non testés` | Pas bloquant : sans l'extension PDO du SGBD (typiquement `pdo_oci` pour Oracle), l'application ne teste que l'accessibilité TCP ; l'authentification est validée par SchemaSpy via JDBC |
 | `Java non trouvé dans le PATH` | Installez un JDK/JRE 11+ et vérifiez `JAVA_HOME` / `PATH`, ou placez-le dans le dossier `java_folder` configuré |
-| Pas de diagrammes / erreurs Graphviz | Sans `dot` détecté, l'app bascule sur viz.js automatiquement — sinon forcez avec `--engine=vizjs`. Voir [Graphviz](#graphviz) |
+| [Graphviz](#6️⃣-graphviz) | un outil de graphisme de type [DOT](https://graphviz.org/), pour le graphique des relations de tables |
 
-Le mode `--verbose` affiche les chemins résolus, les commandes exécutées et la trace complète en cas d'erreur inattendue.
+> [!NOTE]
+> Le mode `--verbose` affiche les chemins résolus, les commandes exécutées et la trace complète en cas d'erreur inattendue.
 
-## Limitations connues
+## 🔟+2️⃣Limitations connues
 
-Points identifiés lors d'une revue de code (2026-07-03) :
-
-- **Chemin du JAR SchemaSpy potentiellement introuvable hors déploiement type** (non corrigé) : sur un simple `git clone`, le dossier `jdbc/` du dépôt est bien détecté (grâce à l'ordre d'initialisation, avant que le base path ne soit appliqué), mais `schemaspy_folder` (résolu par rapport au base path auto-détecté, voir plus haut) suppose l'existence d'une arborescence `SchemaSpy7/` en dehors du dépôt. Sans cette arborescence en place, l'exécution échoue à l'étape de génération avec `Fichier introuvable`. Correction possible mais qui implique un choix de déploiement (config à adapter selon l'environnement cible) — à traiter à part.
-- **`composer.lock`** (non corrigé) : la contrainte PHP de `composer.json` a été relevée à `>=8.1` sans que `composer.lock` ait pu être régénéré dans l'environnement ayant fait ce changement (pas de binaire `composer` disponible) — lancez `composer update` une fois pour resynchroniser.
+Une base de données Oracle avec des tables partitionnées peut générer des diagrammes incomplets (tables manquantes dans les diagrammes de relations). Le problème est connu sur SchemaSpy 7.0.2 et 7.0.3-lh-2, et n'a pas de solution simple côté ShemaSpy-cli.
 
 ## Changelog
 

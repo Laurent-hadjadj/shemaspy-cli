@@ -111,6 +111,15 @@ final class Runner
                 $this->logger->info("📦 Chemin du driver: {$driverPath}", 'gray');
             }
 
+            // viz.js (JavaScript embarqué) est très lent sur les grands schémas : on prévient avant
+            // de lancer une analyse qui pourrait durer des heures (cas observé : 300 tables, > 30 min).
+            if ($params['useVizJs'] ?? false) {
+                $this->logger->warning(
+                    "Moteur viz.js : très lent et gourmand en mémoire au-delà de quelques dizaines de tables. " .
+                    "Pour un grand schéma, utilisez Graphviz (--engine=graphviz, ou installez-le dans tools/)."
+                );
+            }
+
             // Exécuter la commande
             putenv("JAVA_HOME={$java['home']}");
             $exitCode = $this->runSchemaSpy($command);
@@ -159,8 +168,16 @@ final class Runner
 
         $exitCode = $this->processRunner->run(
             $command,
-            static function (string $text) use ($filter): void {
-                echo $filter?->filter($text) ?? $text;
+            function (string $text) use ($filter): void {
+                $shown = $filter?->filter($text) ?? $text;
+                echo $shown;
+
+                // Trace de la progression dans le fichier de log (les lignes masquées par le filtre
+                // y sont déjà écrites par lui) : permet de suivre une analyse longue sans la console.
+                $line = trim($shown);
+                if ($line !== '' && preg_match('/^\.+$/', $line) !== 1) {
+                    $this->logger->logOnly($line);
+                }
             }
         );
 

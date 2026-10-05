@@ -333,7 +333,7 @@ final class InteractiveMode
         $this->logger->info("Moteur des diagrammes :", self::COLORS['highlight']);
         $this->logger->info("  [1] auto (" . ($graphviz !== null ? 'Graphviz ' . ($graphviz['version'] ?? '?') . ' détecté' : 'Graphviz introuvable, viz.js') . ")");
         $this->logger->info("  [2] graphviz (natif, repli sur viz.js si introuvable)");
-        $this->logger->info("  [3] vizjs (rendu intégré, sans Graphviz)");
+        $this->logger->info("  [3] vizjs (rendu intégré, sans Graphviz ; très lent au-delà de ~50 tables)");
         $engines = [1 => GenerationOptions::ENGINE_AUTO, 2 => GenerationOptions::ENGINE_GRAPHVIZ, 3 => GenerationOptions::ENGINE_VIZJS];
         $default = (string) array_search($current->engine, $engines, true);
         do {
@@ -425,9 +425,9 @@ final class InteractiveMode
     {
         $engine = $params['options']->engine;
         if ($engine === GenerationOptions::ENGINE_AUTO) {
-            return $params['useVizJs'] ? 'auto -> viz.js (Graphviz introuvable)' : 'auto -> Graphviz';
+            return $params['useVizJs'] ? 'auto -> viz.js (Graphviz introuvable, lent sur les grands schémas)' : 'auto -> Graphviz';
         }
-        return $engine;
+        return $engine === GenerationOptions::ENGINE_VIZJS ? 'vizjs (lent sur les grands schémas)' : $engine;
     }
 
     /**

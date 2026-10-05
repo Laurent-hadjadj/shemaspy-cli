@@ -260,4 +260,12 @@ final class InteractiveModeTest extends TestCase
         $this->expectException(\SchemaSpyCli\Exceptions\ValidationException::class);
         $this->session([...self::CONNECTION, '', 'o'], ['html' => false]);
     }
+
+    public function testSummaryWarnsWhenVizJsIsSelected(): void
+    {
+        [, $output] = $this->session([...self::CONNECTION, 'o', '3', '', '', '', '', '', '', '', '', '', 'o']);
+
+        $this->assertStringContainsString('Moteur        : vizjs (lent sur les grands schémas)', $output);
+        $this->assertStringContainsString('très lent au-delà de ~50 tables', $output, 'avertissement dans le menu du moteur');
+    }
 }
