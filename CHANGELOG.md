@@ -30,6 +30,7 @@ Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce f
 
 ### Corrigé
 
+- `FileSystem` : `removeDirectory()` ne suit plus les liens symboliques ni les jonctions Windows (le contenu de leur cible était supprimé) ; `copyDirectory()` n'entre plus en récursion infinie quand la destination est dans la source ; `ensureDirectory()` n'émet plus d'avertissement PHP avant son exception ; `getFileHash()` et `getFileSize()` traitent un dossier comme un non-fichier (`null` / `0 B`) au lieu de provoquer un échec de `hash_file()`. 38 tests ajoutés.
 - `--config=` (valeur vide) : message d'erreur incompréhensible (« fichier vide » pour le dossier du projet) ; équivaut maintenant à l'absence de l'option (`config/config.json`). Tests d'`ArgumentParser` (46 cas : drapeaux, paramètres, avertissements, valeurs par défaut, cohérence, aide et sortie de `--help`/`-h`).
 - Validation du nom de base : le point est autorisé (`BASE.exemple.fr`), pour les noms de service Oracle avec domaine. Il ne peut ni commencer ni finir le nom, ni être doublé. Pour se connecter à un *service* (et non à un SID) il faut un type SchemaSpy `orathin-service` dans `config.json` ; le type `oracle` livré (`orathin`) attend un SID.
 - Mode non-interactif : un port non numérique (`--port=abc`) provoquait un `TypeError` (« Erreur inattendue ») ; un port décimal (`5432.5`) était accepté en silence comme `5432`. Les deux donnent maintenant une erreur de validation claire. Une clé `db` absente de `collect()` retombe proprement sur `postgresql`.

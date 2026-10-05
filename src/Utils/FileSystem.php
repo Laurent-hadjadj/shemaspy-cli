@@ -34,10 +34,10 @@ final class FileSystem
      */
     public function ensureDirectory(string $path): void
     {
-        if (!is_dir($path)) {
-            if (!mkdir($path, 0755, true)) {
-                throw new FileNotFoundException("Impossible de créer le dossier: {$path}");
-            }
+        // @ : l'échec est signalé par l'exception ci-dessous, pas par un avertissement PHP ;
+        // is_dir() après coup tolère un dossier créé entre-temps par un autre processus.
+        if (!is_dir($path) && !@mkdir($path, 0755, true) && !is_dir($path)) {
+            throw new FileNotFoundException("Impossible de créer le dossier: {$path}");
         }
     }
 
@@ -61,10 +61,16 @@ final class FileSystem
         $files = array_diff(scandir($path), ['.', '..']);
         foreach ($files as $file) {
             $filePath = $path . '/' . $file;
-            if (is_dir($filePath)) {
+            if (is_link($filePath)) {
+                // Ne jamais suivre un lien : on supprimerait le contenu de sa cible.
+                // Sous Windows un lien vers un dossier se supprime avec rmdir().
+                is_dir($filePath) && PHP_OS_FAMILY === 'Windows' ? rmdir($filePath) : unlink($filePath);
+            } elseif (is_dir($filePath)) {
                 $this->removeDirectory($filePath);
             } else {
-                unlink($filePath);
+                // Sous Windows, unlink() refuse une jonction de dossier (« Is a directory ») que PHP ne
+                // reconnaît ni comme lien ni comme dossier : rmdir() la supprime sans toucher à sa cible.
+                @unlink($filePath) || rmdir($filePath);
             }
         }
 
@@ -91,13 +97,25 @@ final class FileSystem
 
         $this->ensureDirectory($destination);
 
+        // Destination située dans la source (ex: copier a/ vers a/sauvegarde) : on l'ignore pendant
+        // le parcours, sinon la copie se rappelle indéfiniment sur ses propres fichiers.
+        $this->copyTree($source, $destination, (string) realpath($destination));
+    }
+
+    private function copyTree(string $source, string $destination, string $skip): void
+    {
+        $this->ensureDirectory($destination);
+
         $files = array_diff(scandir($source), ['.', '..']);
         foreach ($files as $file) {
             $sourcePath = $source . '/' . $file;
             $destPath = $destination . '/' . $file;
 
             if (is_dir($sourcePath)) {
-                $this->copyDirectory($sourcePath, $destPath);
+                if ($skip !== '' && realpath($sourcePath) === $skip) {
+                    continue;
+                }
+                $this->copyTree($sourcePath, $destPath, $skip);
             } else {
                 copy($sourcePath, $destPath);
             }
@@ -117,7 +135,7 @@ final class FileSystem
      */
     public function getFileSize(string $file): string
     {
-        if (!file_exists($file)) {
+        if (!is_file($file)) {
             return '0 B';
         }
 
@@ -144,10 +162,12 @@ final class FileSystem
      */
     public function getFileHash(string $file): ?string
     {
-        if (!file_exists($file)) {
+        if (!is_file($file)) {
             return null;
         }
-        return hash_file('sha256', $file);
+
+        $hash = hash_file('sha256', $file);
+        return $hash === false ? null : $hash;
     }
 
     /**
