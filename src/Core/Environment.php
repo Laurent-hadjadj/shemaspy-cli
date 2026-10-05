@@ -82,12 +82,45 @@ class Environment
      */
     public function getJavaExecutable(string $javaHome): string
     {
-        // Normaliser les slashes
-        $javaHome = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $javaHome);
-        $executable = $this->isWindows()
-            ? "{$javaHome}/bin/java.exe"
-            : "{$javaHome}/bin/java";
-        return str_replace('/', DIRECTORY_SEPARATOR, $executable);
+        return $this->executablePath($javaHome, $this->isWindows() ? 'java.exe' : 'java');
+    }
+
+    /**
+     * [Description for executablePath]
+     * <dossier>/bin/<exécutable>, séparateurs normalisés, sans séparateur doublé quand le
+     * dossier se termine déjà par un « / » ou un « \ » (JAVA_HOME en a souvent un sous Windows).
+     *
+     * @param string $home
+     * @param string $executable
+     * 
+     * @return string
+     * 
+     * Created at: 05/10/2026 21:37:18 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com> 
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0. 
+     */
+    private function executablePath(string $home, string $executable): string
+    {
+        $home = rtrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $home), DIRECTORY_SEPARATOR);
+
+        return $home . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . $executable;
+    }
+
+    /**
+     * Exécute une commande shell et renvoie sa sortie ('' si elle n'en produit aucune).
+     * Point d'extension pour les tests : aucun processus réel n'est nécessaire.
+     */
+    protected function runCommand(string $command): string
+    {
+        return (string) shell_exec($command);
+    }
+
+    /** Première ligne non vide d'une sortie (« where java » en liste une par installation). */
+    private function firstLine(string $output): string
+    {
+        $lines = preg_split('/\R/', trim($output));
+
+        return trim($lines[0] ?? '');
     }
 
     /**
@@ -103,11 +136,7 @@ class Environment
      */
     public function getDotExecutable(string $graphvizDir): string
     {
-        $graphvizDir = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $graphvizDir);
-        $executable = $this->isWindows()
-            ? "{$graphvizDir}/bin/dot.exe"
-            : "{$graphvizDir}/bin/dot";
-        return str_replace('/', DIRECTORY_SEPARATOR, $executable);
+        return $this->executablePath($graphvizDir, $this->isWindows() ? 'dot.exe' : 'dot');
     }
 
     /**
@@ -126,23 +155,18 @@ class Environment
             return $this->javaHomeCache;
         }
 
-        // Vérifier JAVA_HOME
-        if (getenv('JAVA_HOME')) {
-            $this->javaHomeCache = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, getenv('JAVA_HOME'));
+        // JAVA_HOME : tolère les guillemets et espaces parasites (fréquents sous Windows)
+        $configured = trim((string) getenv('JAVA_HOME'), " \t\"'");
+        if ($configured !== '') {
+            $this->javaHomeCache = $this->normalizePath($configured);
             return $this->javaHomeCache;
         }
 
-        // Vérifier dans le PATH
-        $command = $this->isWindows() ? 'where java 2>nul' : 'which java 2>/dev/null';
-        $output = shell_exec($command);
-
-        if (trim((string) $output) !== '') {
-            $javaPath = trim((string) $output);
-            // Normaliser les slashes
-            $javaPath = str_replace('/', DIRECTORY_SEPARATOR, $javaPath);
-
-            // Remonter d'un niveau pour avoir le dossier JAVA_HOME
-            $this->javaHomeCache = dirname(dirname($javaPath));
+        // Vérifier dans le PATH : seule la première installation trouvée compte
+        $javaPath = $this->firstLine($this->runCommand($this->isWindows() ? 'where java 2>nul' : 'which java 2>/dev/null'));
+        if ($javaPath !== '') {
+            // Remonter de deux niveaux (bin/java -> dossier JAVA_HOME)
+            $this->javaHomeCache = dirname(dirname($this->normalizePath($javaPath)));
             return $this->javaHomeCache;
         }
 
@@ -160,15 +184,10 @@ class Environment
      */
     public function findGraphvizInPath(): ?string
     {
-        $command = $this->isWindows() ? 'where dot 2>nul' : 'which dot 2>/dev/null';
-        $output = shell_exec($command);
+        // « where dot » liste toutes les installations : on ne garde que la première
+        $dotPath = $this->firstLine($this->runCommand($this->isWindows() ? 'where dot 2>nul' : 'which dot 2>/dev/null'));
 
-        if (trim((string) $output) !== '') {
-            $dotPath = trim((string) $output);
-            return str_replace('/', DIRECTORY_SEPARATOR, $dotPath);
-        }
-
-        return null;
+        return $dotPath !== '' ? $this->normalizePath($dotPath) : null;
     }
 
     /**
@@ -212,11 +231,11 @@ class Environment
      */
     public function getJavaVersion(?string $javaExe = null): ?string
     {
-        $output = shell_exec(escapeshellarg($javaExe ?? 'java') . ' -version 2>&1');
+        $output = $this->runCommand(escapeshellarg($javaExe ?? 'java') . ' -version 2>&1');
 
-        // Format historique JDK 8 et antérieur : version "1.8.0_231" (suffixe de build ignoré).
-        // Format JDK 9+ : version "17.0.9" ou "11".
-        if (preg_match('/version "(\d+(?:\.\d+)*)(?:_\d+)?"/', (string) $output, $matches)) {
+        // Formats reconnus : « 1.8.0_231 » (JDK 8 et antérieurs, suffixe de build ignoré),
+        // « 17.0.9 », « 11 », et les builds à suffixe comme « 22-ea » ou « 21.0.1+12 ».
+        if (preg_match('/version "(\d+(?:\.\d+)*)(?:[-+_][^"]*)?"/', $output, $matches)) {
             return $matches[1];
         }
 
@@ -237,8 +256,8 @@ class Environment
     public function getGraphvizVersion(?string $dotExe = null): ?string
     {
         // Graphviz écrit sa version sur stderr : "dot - graphviz version 2.38.0 (...)"
-        $output = shell_exec(escapeshellarg($dotExe ?? 'dot') . ' -V 2>&1');
-        if (preg_match('/graphviz version ([0-9.]+)/i', (string) $output, $matches)) {
+        $output = $this->runCommand(escapeshellarg($dotExe ?? 'dot') . ' -V 2>&1');
+        if (preg_match('/graphviz version ([0-9.]+)/i', $output, $matches)) {
             return $matches[1];
         }
         return null;
@@ -255,8 +274,10 @@ class Environment
      * @author     Laurent HADJADJ <laurent_h@me.com>
      * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
-    public function isJavaVersionCompatible(string $minVersion = '11.0'): bool
+    public function isJavaVersionCompatible(string $minVersion = '11'): bool
     {
+        // '11' et non '11.0' : version_compare('11', '11.0', '>=') est faux en PHP, ce qui
+        // aurait refusé un JDK qui s'annonce simplement « 11 ».
         $version = $this->getJavaVersion();
 
         if ($version === null) {
@@ -370,7 +391,8 @@ class Environment
      */
     public function isPathAbsolute(string $path): bool
     {
-        return preg_match('/^[A-Z]:\\\\|^\//', $path) === 1;
+        // « C:\x », « c:/x » (lettre de lecteur, / ou \), « \\serveur\partage » (UNC) et « /x »
+        return preg_match('#^(?:[A-Za-z]:[\\\\/]|\\\\\\\\|/)#', $path) === 1;
     }
 
     /**
@@ -386,10 +408,11 @@ class Environment
      */
     public function isCommandAvailable(string $command): bool
     {
+        $name = escapeshellarg($command);
         $check = $this->isWindows()
-            ? "where {$command} 2>nul"
-            : "command -v {$command} 2>/dev/null";
-        $output = shell_exec($check);
-        return trim((string) $output) !== '';
+            ? "where {$name} 2>nul"
+            : "command -v {$name} 2>/dev/null";
+
+        return trim($this->runCommand($check)) !== '';
     }
 }

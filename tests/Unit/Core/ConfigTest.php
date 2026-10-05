@@ -197,4 +197,39 @@ final class ConfigTest extends TestCase
         $this->assertArrayHasKey('jdbc', $all);
         $this->assertArrayHasKey('defaults', $all);
     }
+
+    // --- getAbsolutePath -------------------------------------------------
+
+    /** @dataProvider absolutePaths */
+    public function testAbsolutePathIsReturnedUnchanged(string $path): void
+    {
+        $config = new Config();
+        $config->setBasePath('/base');
+
+        $this->assertSame($path, $config->getAbsolutePath($path));
+    }
+
+    public static function absolutePaths(): array
+    {
+        return [
+            'unix'                       => ['/usr/lib/jvm'],
+            'Windows antislash'          => ['C:\\tools\\jdk17'],
+            'Windows slash (courant en PHP)' => ['C:/tools/jdk17'],
+            'lecteur en minuscule'       => ['d:/data'],
+            'UNC'                        => ['\\\\serveur\\partage'],
+        ];
+    }
+
+    public function testRelativePathIsResolvedAgainstTheBasePath(): void
+    {
+        $config = new Config();
+        $config->setBasePath('/base');
+
+        $this->assertSame($config->getBasePath() . DIRECTORY_SEPARATOR . 'tools/jdk17', $config->getAbsolutePath('tools/jdk17'));
+    }
+
+    public function testRelativePathIsLeftAsIsWithoutBasePath(): void
+    {
+        $this->assertSame('tools/jdk17', (new Config())->getAbsolutePath('tools/jdk17'));
+    }
 }

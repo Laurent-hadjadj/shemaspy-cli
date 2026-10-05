@@ -244,7 +244,7 @@ final class Config
     public function getAbsolutePath(string $path): string
     {
         // Si le chemin est déjà absolu
-        if (preg_match('/^[A-Z]:\\\\|^\//', $path)) {
+        if ((new Environment())->isPathAbsolute($path)) {
             return $path;
         }
 
