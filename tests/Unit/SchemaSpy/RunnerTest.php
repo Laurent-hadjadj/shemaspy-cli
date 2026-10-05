@@ -25,6 +25,7 @@ use SchemaSpyCli\Tests\Support\FakeEnvironment;
 use SchemaSpyCli\Tests\Support\TempDir;
 use SchemaSpyCli\Utils\PathFinder;
 use SchemaSpyCli\Tests\Support\FakeProcessRunner;
+use SchemaSpyCli\Tests\Support\StubPdo;
 
 /**
  * [Description RunnerTest]
@@ -95,7 +96,7 @@ final class RunnerTest extends TestCase
         return (int) substr(strrchr((string) stream_socket_get_name($this->server, false), ':'), 1);
     }
 
-    private function runner(FakeProcessRunner $process, ?string $jdkVersion = '17.0.8', bool $withJdk = true): Runner
+    private function runner(FakeProcessRunner $process, ?string $jdkVersion = '17.0.8', bool $withJdk = true, ?\Closure $pdoFactory = null): Runner
     {
         $jdk = str_replace('/', DIRECTORY_SEPARATOR, $this->tmp->path . '/tools/jdk17');
         if (!$withJdk) {
@@ -108,7 +109,7 @@ final class RunnerTest extends TestCase
         $pathFinder = new PathFinder($this->config, $quiet, $env);
         $driverManager = new DriverManager($this->config, $quiet);
 
-        return new Runner($this->config, $this->logger, new Environment(), $pathFinder, $driverManager, $process);
+        return new Runner($this->config, $this->logger, new Environment(), $pathFinder, $driverManager, $process, $pdoFactory);
     }
 
     private function params(array $overrides = []): array
@@ -352,5 +353,49 @@ final class RunnerTest extends TestCase
         [, $output] = $this->execute($this->runner(new FakeProcessRunner()), $this->params(['useVizJs' => false]));
 
         $this->assertStringNotContainsString('Moteur viz.js', $output);
+    }
+
+    // --- connexion vérifiée par PDO (faux PDO) -----------------------------
+
+    private function postgresqlParams(): array
+    {
+        $this->tmp->file('jdbc/pg.jar');
+        $this->config->set('jdbc.postgresql', ['type' => 'pgsql11', 'port' => 5432, 'driver' => 'pg.jar', 'version' => '1']);
+
+        return $this->params(['dbType' => 'postgresql', 'dbConfig' => $this->config->getDatabase('postgresql')]);
+    }
+
+    public function testSuccessfulPdoConnectionIsAnnouncedAndIdentifiersAreChecked(): void
+    {
+        if (!extension_loaded('pdo_pgsql')) {
+            $this->markTestSkipped('pdo_pgsql requis (sans lui seul le test TCP est possible).');
+        }
+        $stub = new StubPdo();
+        $params = $this->postgresqlParams();
+
+        [$code, $output] = $this->execute($this->runner(new FakeProcessRunner(), pdoFactory: fn() => $stub), $params);
+
+        $this->assertSame(0, $code);
+        $this->assertStringContainsString('Connexion réussie', $output);
+        $this->assertStringNotContainsString('identifiants non testés', $output, 'avec PDO, les identifiants sont vérifiés');
+        $this->assertSame(['SELECT 1'], $stub->queries);
+    }
+
+    public function testPdoAuthenticationFailureStopsBeforeLaunchingSchemaSpy(): void
+    {
+        if (!extension_loaded('pdo_pgsql')) {
+            $this->markTestSkipped('pdo_pgsql requis.');
+        }
+        $process = new FakeProcessRunner();
+        $params = $this->postgresqlParams();
+        $refused = function (): \PDO {
+            throw new \PDOException('SQLSTATE[08006] authentification refusée');
+        };
+
+        [$code, $output] = $this->execute($this->runner($process, pdoFactory: $refused), $params);
+
+        $this->assertSame(1, $code);
+        $this->assertStringContainsString('Impossible de se connecter', $output);
+        $this->assertNull($process->command, 'SchemaSpy ne doit pas être lancé');
     }
 }

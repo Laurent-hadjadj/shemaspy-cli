@@ -36,7 +36,8 @@ final class Runner
         private readonly Environment $environment,
         private readonly PathFinder $pathFinder,
         private readonly DriverManager $driverManager,
-        private readonly ProcessRunner $processRunner = new ProcessRunner()
+        private readonly ProcessRunner $processRunner = new ProcessRunner(),
+        private readonly ?\Closure $pdoFactory = null
     ) {
         $this->propertiesGenerator = new PropertiesGenerator($config, $environment, $logger, $driverManager, $pathFinder);
         $this->commandBuilder = new CommandBuilder($config, $environment, $logger, $driverManager);
@@ -229,7 +230,7 @@ final class Runner
         $this->logger->progress("Vérification de la connexion...");
 
         try {
-            $connection = new Connection($params, $this->logger);
+            $connection = new Connection($params, $this->logger, $this->pdoFactory);
             $connection->test();
 
             if ($connection->getMode() === Connection::MODE_TCP) {

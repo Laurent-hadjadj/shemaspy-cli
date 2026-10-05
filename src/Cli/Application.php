@@ -63,14 +63,15 @@ BANNER;
         ?Logger $logger = null,
         private readonly ?string $basePath = null,
         private readonly ?ProcessRunner $processRunner = null,
-        ?Environment $environment = null
+        ?Environment $environment = null,
+        ?VersionChecker $versionChecker = null
     ) {
         // Services sans dépendances
         $this->logger = $logger ?? new Logger(false, dirname(__DIR__, 2) . '/logs/schemaspy-cli.log');
         $this->argumentParser = new ArgumentParser();
         $this->environment = $environment ?? new Environment();
         $this->validator = new Validator();
-        $this->versionChecker = new VersionChecker($this->logger, $this->environment);
+        $this->versionChecker = $versionChecker ?? new VersionChecker($this->logger, $this->environment);
         $this->fileSystem = new FileSystem();
 
         // Config chargé plus tard (lors du run())
@@ -449,9 +450,7 @@ BANNER;
      */
     private function checkJdbcDrivers(): void
     {
-        if ($this->driverManager === null) {
-            return;
-        }
+        // (driverManager est toujours créé par initializeServices() avant cet appel)
 
         // Vérifier si le dossier JDBC est vide
         if ($this->driverManager->isJdbcDirectoryEmpty()) {

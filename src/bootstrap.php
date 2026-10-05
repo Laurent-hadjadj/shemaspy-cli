@@ -34,7 +34,10 @@ foreach ($autoloadPaths as $path) {
 }
 
 if (!$found) {
-    die("❌ Autoloader introuvable. Exécutez 'composer install'.\n");
+    // Sortie d'erreur + code non nul : die("texte") se terminait avec le code 0, qu'un script ou
+    // un pipeline prenait pour un succès
+    fwrite(STDERR, "❌ Autoloader introuvable. Exécutez 'composer install'.\n");
+    exit(1);
 }
 
 use SchemaSpyCli\Cli\Application;

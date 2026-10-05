@@ -47,9 +47,10 @@ final class InteractiveMode
     public function __construct(
         private readonly Config $config,
         private readonly Logger $logger,
-        private readonly Validator $validator
+        private readonly Validator $validator,
+        ?PathFinder $pathFinder = null
     ) {
-        $this->pathFinder = new PathFinder($config, $logger);
+        $this->pathFinder = $pathFinder ?? new PathFinder($config, $logger);
         $this->outputNameGenerator = new OutputNameGenerator($config);
         $this->loadLastParams();
     }

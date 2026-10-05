@@ -17,6 +17,9 @@ use PHPUnit\Framework\TestCase;
 use SchemaSpyCli\Cli\InteractiveMode;
 use SchemaSpyCli\Core\Config;
 use SchemaSpyCli\Core\Logger;
+use SchemaSpyCli\Tests\Support\FakeEnvironment;
+use SchemaSpyCli\Tests\Support\TempDir;
+use SchemaSpyCli\Utils\PathFinder;
 use SchemaSpyCli\Utils\Validator;
 
 /**
@@ -32,15 +35,24 @@ final class InteractiveModeTest extends TestCase
     private const CONNECTION = ['1', 'localhost', '5432', 'demo', 'public', 'scott', 'tiger'];
 
     private Config $config;
+    private TempDir $tmp;
 
     protected function setUp(): void
     {
+        $this->tmp = new TempDir();
         $this->config = new Config();
+        // Les derniers paramètres (schemaspy.last.json) sont lus/écrits sous le base path : dossier jetable
+        $this->config->setBasePath($this->tmp->path);
         $this->config->set('jdbc', [
             'postgresql' => ['type' => 'pgsql11', 'port' => 5432, 'driver' => 'postgresql-42.7.13.jar', 'version' => '42.7.13', 'db_version' => '11-18'],
             'oracle'     => ['type' => 'orathin', 'port' => 1521, 'driver' => 'ojdbc11.jar', 'version' => '23', 'db_version' => '19c-23c'],
         ]);
         $this->config->set('schemaspy.markdown_supported', true);
+    }
+
+    protected function tearDown(): void
+    {
+        $this->tmp->remove();
     }
 
     /**
@@ -267,5 +279,105 @@ final class InteractiveModeTest extends TestCase
 
         $this->assertStringContainsString('Moteur        : vizjs (lent sur les grands schémas)', $output);
         $this->assertStringContainsString('très lent au-delà de ~50 tables', $output, 'avertissement dans le menu du moteur');
+    }
+
+    // --- saisies invalides, derniers paramètres, détection de Graphviz ------
+
+    /** @param list<string> $answers */
+    private function sessionWith(array $answers, ?PathFinder $pathFinder = null): array
+    {
+        $stream = fopen('php://memory', 'r+');
+        fwrite($stream, implode("\n", $answers) . "\n");
+        rewind($stream);
+
+        $logger = new Logger(false);
+        $logger->setInputStream($stream);
+        $mode = new InteractiveMode($this->config, $logger, new Validator(), $pathFinder);
+
+        ob_start();
+        try {
+            $params = $mode->collect([]);
+        } finally {
+            $output = (string) ob_get_clean();
+            fclose($stream);
+        }
+
+        return [$params, preg_replace('/\e\[[0-9;]*[A-Za-z]/', '', $output), $mode];
+    }
+
+    public function testInvalidHostIsAskedAgainThenAccepted(): void
+    {
+        $answers = ['1', 'bad host!', 'bon.host', '5432', 'demo', 'public', 'scott', 'tiger', '', 'o'];
+
+        [$params, $output] = $this->sessionWith($answers);
+
+        $this->assertSame('bon.host', $params['host']);
+        $this->assertStringContainsString('Veuillez réessayer (1/3)', $output);
+        $this->assertStringNotContainsString('(2/3)', $output);
+    }
+
+    public function testThreeInvalidAttemptsFallBackToTheDefault(): void
+    {
+        $answers = ['1', 'bad host!', 'bad host!', 'bad host!', '5432', 'demo', 'public', 'scott', 'tiger', '', 'o'];
+
+        [$params, $output] = $this->sessionWith($answers);
+
+        $this->assertSame('localhost', $params['host'], 'valeur par défaut après 3 essais');
+        $this->assertStringContainsString('Veuillez réessayer (1/3)', $output);
+        $this->assertStringContainsString('Veuillez réessayer (2/3)', $output);
+        $this->assertStringContainsString("Nombre maximum d'essais atteint", $output);
+    }
+
+    public function testGraphvizDetectionIsAnnounced(): void
+    {
+        $dot = $this->tmp->file('gv/bin/' . (PHP_OS_FAMILY === 'Windows' ? 'dot.exe' : 'dot'));
+        $finder = new PathFinder($this->config, new Logger(true), new FakeEnvironment(null, [], $dot));
+
+        [, $output] = $this->sessionWith(['1', 'h', '5432', 'demo', 'public', 'scott', 'tiger', '', 'o'], $finder);
+
+        $this->assertStringContainsString('Graphviz trouvé (système): 16.1.0', $output);
+    }
+
+    public function testMissingGraphvizSwitchesToVizJs(): void
+    {
+        $finder = new PathFinder($this->config, new Logger(true), new FakeEnvironment());
+
+        [$params, $output] = $this->sessionWith(['1', 'h', '5432', 'demo', 'public', 'scott', 'tiger', '', 'o'], $finder);
+
+        $this->assertStringContainsString('Graphviz non trouvé, utilisation de viz.js', $output);
+        $this->assertTrue($params['useVizJs']);
+    }
+
+    public function testLastParametersAreRememberedAndProposedNextTime(): void
+    {
+        [$params, , $mode] = $this->sessionWith(['2', 'db.exemple.fr', '1522', 'FONDS', 'APP', 'scott', 'tiger', '', 'o']);
+        $mode->saveLastParams($params);
+
+        $saved = json_decode((string) file_get_contents($this->tmp->path . '/schemaspy.last.json'), true);
+        $this->assertSame('oracle', $saved['dbType']);
+        $this->assertSame('db.exemple.fr', $saved['host']);
+        $this->assertSame(1522, $saved['port']);
+        $this->assertArrayNotHasKey('password', $saved);
+
+        // Deuxième session : Entrée partout => les valeurs mémorisées sont reprises
+        [$again, $output] = $this->sessionWith(['', '', '', '', '', '', 'tiger', '', 'o']);
+
+        $this->assertSame('oracle', $again['dbType']);
+        $this->assertSame('db.exemple.fr', $again['host']);
+        $this->assertSame(1522, $again['port']);
+        $this->assertSame('FONDS', $again['database']);
+        $this->assertSame('APP', $again['schema']);
+        $this->assertSame('scott', $again['user']);
+        $this->assertStringContainsString('Nom du host [db.exemple.fr]', $output);
+    }
+
+    public function testCorruptLastParametersFileIsIgnored(): void
+    {
+        $this->tmp->file('schemaspy.last.json', '{ pas du json');
+
+        [$params, $output] = $this->sessionWith(['1', 'h', '5432', 'demo', 'public', 'scott', 'tiger', '', 'o']);
+
+        $this->assertSame('postgresql', $params['dbType']);
+        $this->assertStringContainsString('Nom du host [localhost]', $output, 'valeurs par défaut de la config');
     }
 }
