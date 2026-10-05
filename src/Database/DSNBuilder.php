@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Construction des DSN pour les connexions aux bases de données
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\Database;
@@ -11,6 +16,11 @@ namespace SchemaSpyCli\Database;
 use SchemaSpyCli\Core\Config;
 use SchemaSpyCli\Exceptions\ConnectionException;
 
+/**
+ * [Description DSNBuilder]
+ * Construction des DSN pour les connexions aux bases de données
+ *
+ */
 final class DSNBuilder
 {
     private array $dsnTemplates = [];
@@ -20,6 +30,15 @@ final class DSNBuilder
         $this->initializeTemplates();
     }
 
+    /**
+     * [Description for initializeTemplates]
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:55:03 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function initializeTemplates(): void
     {
         $this->dsnTemplates = [
@@ -62,6 +81,17 @@ final class DSNBuilder
         ];
     }
 
+    /**
+     * [Description for build]
+     *
+     * @param array $params
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:55:12 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function build(array $params): string
     {
         $dbType = $params['dbType'] ?? 'postgresql';
@@ -98,31 +128,96 @@ final class DSNBuilder
         return $dsn;
     }
 
+    /**
+     * [Description for getDriverName]
+     *
+     * @param string $dbType
+     *
+     * @return string|null
+     *
+     * Created at: 05/10/2026 08:55:18 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDriverName(string $dbType): ?string
     {
         return $this->dsnTemplates[$dbType]['driver'] ?? null;
     }
 
+    /**
+     * [Description for getDefaultPort]
+     *
+     * @param string $dbType
+     *
+     * @return int|null
+     *
+     * Created at: 05/10/2026 08:55:21 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDefaultPort(string $dbType): ?int
     {
         return $this->dsnTemplates[$dbType]['default_port'] ?? null;
     }
 
+    /**
+     * [Description for getTestQuery]
+     *
+     * @param string $dbType
+     *
+     * @return string|null
+     *
+     * Created at: 05/10/2026 08:55:25 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getTestQuery(string $dbType): ?string
     {
         return $this->dsnTemplates[$dbType]['test_query'] ?? null;
     }
 
+    /**
+     * [Description for supportsType]
+     *
+     * @param string $dbType
+     *
+     * @return bool
+     *
+     * Created at: 05/10/2026 08:55:27 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function supportsType(string $dbType): bool
     {
         return isset($this->dsnTemplates[$dbType]);
     }
 
+    /**
+     * [Description for getAllSupportedTypes]
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:55:30 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getAllSupportedTypes(): array
     {
         return array_keys($this->dsnTemplates);
     }
 
+    /**
+     * [Description for validateDSN]
+     *
+     * @param string $dsn
+     * @param string $dbType
+     *
+     * @return bool
+     *
+     * Created at: 05/10/2026 08:55:32 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function validateDSN(string $dsn, string $dbType): bool
     {
         // Validation basique : vérifier que le DSN contient les éléments essentiels
@@ -137,6 +232,17 @@ final class DSNBuilder
         return true;
     }
 
+    /**
+     * [Description for getConnectionOptions]
+     *
+     * @param array $params
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:55:35 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getConnectionOptions(array $params): array
     {
         $options = [
@@ -171,6 +277,17 @@ final class DSNBuilder
         return $options;
     }
 
+    /**
+     * [Description for parseDSN]
+     *
+     * @param string $dsn
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:55:39 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function parseDSN(string $dsn): array
     {
         $parts = [];
@@ -193,6 +310,17 @@ final class DSNBuilder
         return $parts;
     }
 
+    /**
+     * [Description for getExampleDSN]
+     *
+     * @param string $dbType
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:55:42 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getExampleDSN(string $dbType): string
     {
         $examples = [

@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Construction des commandes SchemaSpy
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\SchemaSpy;
@@ -13,6 +18,10 @@ use SchemaSpyCli\Core\Logger;
 use SchemaSpyCli\Core\Environment;
 use SchemaSpyCli\Database\DriverManager;
 
+/**
+ * [Description CommandBuilder]
+ * Construction des commandes SchemaSpy
+ */
 final class CommandBuilder
 {
     public function __construct(
@@ -23,6 +32,20 @@ final class CommandBuilder
     ) {
     }
 
+    /**
+     * [Description for build]
+     *
+     * @param string $javaExe
+     * @param string $jarFile
+     * @param string $propertiesFile
+     * @param array $params
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:59:16 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function build(string $javaExe, string $jarFile, string $propertiesFile, array $params): string
     {
         // ✅ Utiliser -jar (Spring Boot JAR)

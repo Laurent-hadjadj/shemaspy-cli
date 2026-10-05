@@ -1,9 +1,14 @@
 <?php
+
 /**
- * Mode non-interactif de l'application
- *
- * @author  Laurent HADJADJ - maMoulinette
- * @version 3.0.0
+ *  Ma-Moulinette - ShemaSpy-Cli
+ *  --------------
+ *  Copyright (c) 2015-2026.
+ *  Laurent HADJADJ <laurent_h@me.com>.
+ *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  ---
+ *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
+ *  http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
 namespace SchemaSpyCli\Cli;
@@ -14,6 +19,10 @@ use SchemaSpyCli\Utils\Validator;
 use SchemaSpyCli\Utils\OutputNameGenerator;
 use SchemaSpyCli\Exceptions\ValidationException;
 
+/**
+ * [Description NonInteractiveMode]
+ * Mode non-interactif de l'application
+ */
 final class NonInteractiveMode
 {
     private OutputNameGenerator $outputNameGenerator;
@@ -26,12 +35,23 @@ final class NonInteractiveMode
         $this->outputNameGenerator = new OutputNameGenerator($config);
     }
 
+    /**
+     * [Description for collect]
+     *
+     * @param array $cliParams
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:47:13 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function collect(array $cliParams): array
     {
-        // 🔥 Valider les paramètres requis
+        // Valider les paramètres requis
         $this->validateRequiredParams($cliParams);
 
-        // 🔥 Déterminer le type de base de données
+        // Déterminer le type de base de données
         $dbType = $cliParams['db'] ?? 'postgresql';
         $dbConfig = $this->config->getDatabase($dbType);
 
@@ -42,24 +62,33 @@ final class NonInteractiveMode
             );
         }
 
-        // 🔥 Valider les paramètres individuels
+        // Valider les paramètres individuels
         $this->validateParams($cliParams, $dbConfig);
 
-        // 🔥 Valider la cohérence globale (avec le bon nom de paramètre)
+        // Valider la cohérence globale (avec le bon nom de paramètre)
         $this->validateConsistency($cliParams);
 
-        // 🔥 Générer le nom de sortie
+        // Générer le nom de sortie
         $output = $cliParams['output'] ?? $this->outputNameGenerator->generate($dbType, $cliParams['schema']);
 
-        // 🔥 Valider le nom de sortie
+        // Valider le nom de sortie
         $this->validator->validateOutputName($output);
 
-        // 🔥 Construire le tableau de paramètres final
+        // Construire le tableau de paramètres final
         return $this->buildParams($dbType, $dbConfig, $cliParams, $output);
     }
 
     /**
+     * [Description for validateRequiredParams]
      * Valide les paramètres requis
+     *
+     * @param array $params
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:47:39 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function validateRequiredParams(array $params): void
     {
@@ -83,7 +112,17 @@ final class NonInteractiveMode
     }
 
     /**
+     * [Description for validateParams]
      * Valide les paramètres individuels
+     *
+     * @param array $params
+     * @param array $dbConfig
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:47:57 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function validateParams(array $params, array $dbConfig): void
     {
@@ -117,7 +156,16 @@ final class NonInteractiveMode
     }
 
     /**
-     * 🔥 Valide la cohérence des paramètres (version corrigée)
+     * [Description for validateConsistency]
+     * Valide la cohérence des paramètres (version corrigée)
+     *
+     * @param array $params
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:48:14 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function validateConsistency(array $params): void
     {
@@ -140,7 +188,19 @@ final class NonInteractiveMode
     }
 
     /**
+     * [Description for buildParams]
      * Construit le tableau de paramètres final
+     *
+     * @param string $dbType
+     * @param array $dbConfig
+     * @param array $params
+     * @param string $output
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:48:29 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function buildParams(string $dbType, array $dbConfig, array $params, string $output): array
     {
@@ -164,6 +224,17 @@ final class NonInteractiveMode
         return $finalParams;
     }
 
+    /**
+     * [Description for getParamsSummary]
+     *
+     * @param array $params
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:48:44 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function getParamsSummary(array $params): string
     {
         $summary = [];
