@@ -54,6 +54,18 @@ final class PropertiesGenerator
         return $filepath;
     }
 
+    /**
+     * [Description for buildProperties]
+     *
+     * @param array $params
+     * @param string $outputDir
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 09:00:01 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function buildProperties(array $params, string $outputDir): array
     {
         $date = $this->environment->getDate();
@@ -105,6 +117,18 @@ final class PropertiesGenerator
         return $properties;
     }
 
+    /**
+     * [Description for addGraphvizOptions]
+     *
+     * @param array $properties
+     * @param array $params
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 09:00:07 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function addGraphvizOptions(array &$properties, array $params): void
     {
         $graphviz = $this->pathFinder->detectGraphviz();
@@ -132,6 +156,17 @@ final class PropertiesGenerator
         $properties['schemaspy.imageformat'] = $this->config->get('defaults.image_format', 'svg');
     }
 
+    /**
+     * [Description for addResources]
+     *
+     * @param array $properties
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 09:00:18 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function addResources(array &$properties): void
     {
         $baseDir = $this->config->getBasePath() ?? getcwd();
@@ -171,6 +206,17 @@ final class PropertiesGenerator
         }
     }
 
+    /**
+     * [Description for addConnectionProperties]
+     *
+     * @param array $properties
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 09:00:23 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function addConnectionProperties(array &$properties): void
     {
         $connprops = $this->config->get('connprops', []);
@@ -179,6 +225,18 @@ final class PropertiesGenerator
         }
     }
 
+    /**
+     * [Description for buildContent]
+     *
+     * @param array $properties
+     * @param array $params
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 09:00:26 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function buildContent(array $properties, array $params): string
     {
         // Ne jamais écrire le mot de passe en clair dans l'en-tête de debug.
@@ -213,6 +271,17 @@ final class PropertiesGenerator
         return $content;
     }
 
+    /**
+     * [Description for formatSize]
+     *
+     * @param int $bytes
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 09:00:29 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function formatSize(int $bytes): string
     {
         $units = ['B', 'KB', 'MB', 'GB'];

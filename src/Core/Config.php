@@ -24,7 +24,7 @@ final class Config
     private array $config = [];
     private ?string $basePath = null;
 
-    // 🔥 Chemins par défaut
+    // Chemins par défaut
     private const DEFAULT_PATHS = [
         'jdbc_folder' => 'jdbc',
         'output_folder' => 'report',
@@ -32,6 +32,17 @@ final class Config
         'graphviz_folder' => 'graphviz-2.38'
     ];
 
+    /**
+     * [Description for load]
+     *
+     * @param string $file
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:49:36 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function load(string $file): void
     {
         if (!file_exists($file)) {
@@ -43,17 +54,17 @@ final class Config
     // json_decode() retourne null en cas de JSON invalide OR pour la chaîne "null".
     // On valide donc explicitement avant l'affectation (la propriété est typée array).
     if (trim($content) === '') {
-      throw new ConfigException("Erreur de parsing du fichier: {$file} (fichier vide)");
+        throw new ConfigException("Erreur de parsing du fichier: {$file} (fichier vide)");
     }
 
     $decoded = json_decode($content, true);
     if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
-      throw new ConfigException(
+        throw new ConfigException(
         "Erreur de parsing du fichier: {$file} (" . json_last_error_msg() . ")"
-      );
+    );
     }
     if (!is_array($decoded)) {
-      throw new ConfigException("Structure de configuration invalide: {$file} (racine non objet)");
+        throw new ConfigException("Structure de configuration invalide: {$file} (racine non objet)");
     }
 
     $this->config = $decoded;
@@ -75,6 +86,18 @@ final class Config
         }
     }
 
+    /**
+     * [Description for get]
+     *
+     * @param string $key
+     * @param mixed|null $default
+     *
+     * @return mixed
+     *
+     * Created at: 05/10/2026 08:49:40 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         $keys = explode('.', $key);
@@ -90,6 +113,17 @@ final class Config
         return $value;
     }
 
+    /**
+     * [Description for has]
+     *
+     * @param string $key
+     *
+     * @return bool
+     *
+     * Created at: 05/10/2026 08:49:44 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function has(string $key): bool
     {
         $keys = explode('.', $key);
@@ -105,6 +139,18 @@ final class Config
         return true;
     }
 
+    /**
+     * [Description for set]
+     *
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:49:47 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function set(string $key, mixed $value): void
     {
         $keys = explode('.', $key);
@@ -120,16 +166,47 @@ final class Config
         $ref = $value;
     }
 
+    /**
+     * [Description for getBasePath]
+     *
+     * @return string|null
+     *
+     * Created at: 05/10/2026 08:49:51 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getBasePath(): ?string
     {
         return $this->basePath;
     }
 
+    /**
+     * [Description for setBasePath]
+     *
+     * @param string $path
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:49:54 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function setBasePath(string $path): void
     {
         $this->basePath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $path);
     }
 
+    /**
+     * [Description for getPath]
+     *
+     * @param string $key
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:49:57 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getPath(string $key): string
     {
         $path = $this->get("paths.{$key}");
@@ -153,6 +230,17 @@ final class Config
         return $path;
     }
 
+    /**
+     * [Description for getAbsolutePath]
+     *
+     * @param string $path
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:50:00 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getAbsolutePath(string $path): string
     {
         // Si le chemin est déjà absolu
@@ -167,31 +255,87 @@ final class Config
         return $path;
     }
 
+    /**
+     * [Description for getDatabases]
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:50:05 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDatabases(): array
     {
         return $this->get('jdbc', []);
     }
 
+    /**
+     * [Description for getDatabase]
+     *
+     * @param string $type
+     *
+     * @return array|null
+     *
+     * Created at: 05/10/2026 08:50:08 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getDatabase(string $type): ?array
     {
         return $this->get("jdbc.{$type}");
     }
 
+    /**
+     * [Description for getApplicationName]
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:50:11 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getApplicationName(): string
     {
         return $this->get('application.name', 'ShemaSpy-Cli');
     }
 
+    /**
+     * [Description for getApplicationVersion]
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:50:15 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getApplicationVersion(): string
     {
         return $this->get('application.version', '1.0.0');
     }
 
+    /**
+     * [Description for getSchemaspyVersion]
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:50:19 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getSchemaspyVersion(): string
     {
         return $this->get('schemaspy.version', '7.0.2');
     }
 
+    /**
+     * [Description for getSchemaspyJar]
+     *
+     * @return string
+     *
+     * Created at: 05/10/2026 08:50:27 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getSchemaspyJar(): string
     {
         $version = $this->getSchemaspyVersion();
@@ -199,11 +343,29 @@ final class Config
         return str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $jar);
     }
 
+    /**
+     * [Description for getAll]
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:50:33 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getAll(): array
     {
         return $this->config;
     }
 
+    /**
+     * [Description for getValidationConfig]
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:50:35 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function getValidationConfig(): array
     {
         return $this->get('jdbc_validation', [

@@ -145,6 +145,18 @@ final class InteractiveMode
         return $selectedType;
     }
 
+    /**
+     * [Description for collectConnectionParams]
+     *
+     * @param string $dbType
+     * @param array $dbConfig
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:45:20 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function collectConnectionParams(string $dbType, array $dbConfig): array
     {
         $this->logger->title("Informations de connexion ({$dbType})");
@@ -252,6 +264,17 @@ final class InteractiveMode
         return $useVizJs;
     }
 
+    /**
+     * [Description for showSummary]
+     *
+     * @param array $params
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:45:31 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function showSummary(array $params): void
     {
         $this->logger->title("Récapitulatif");
@@ -343,6 +366,17 @@ final class InteractiveMode
         return GenerationOptions::fromArrays($this->optionDefaults, $answers);
     }
 
+    /**
+     * [Description for promptDegree]
+     *
+     * @param int $default
+     *
+     * @return int
+     *
+     * Created at: 05/10/2026 08:45:41 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function promptDegree(int $default): int
     {
         do {
@@ -351,6 +385,18 @@ final class InteractiveMode
         return $value;
     }
 
+    /**
+     * [Description for promptRegex]
+     *
+     * @param string $message
+     * @param string|null $default
+     *
+     * @return string|null
+     *
+     * Created at: 05/10/2026 08:45:47 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function promptRegex(string $message, ?string $default): ?string
     {
         do {
@@ -441,7 +487,15 @@ final class InteractiveMode
         return $this->logger->promptConfirmation("\nConfirmer la génération ?", true);
     }
 
-    /** Fichier des derniers paramètres : à la racine de l'application (base path de la config). */
+    /**
+     * [Description for lastParamsPath]
+     * Fichier des derniers paramètres : à la racine de l'application (base path de la config).
+     * @return string
+     *
+     * Created at: 05/10/2026 08:45:55 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function lastParamsPath(): string
     {
         return ($this->config->getBasePath() ?? dirname(__DIR__, 2)) . '/schemaspy.last.json';

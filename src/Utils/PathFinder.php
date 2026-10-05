@@ -65,6 +65,15 @@ final class PathFinder
         return $this->java;
     }
 
+    /**
+     * [Description for resolveJava]
+     *
+     * @return array|null
+     *
+     * Created at: 05/10/2026 09:03:52 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function resolveJava(): ?array
     {
         $required = $this->requiredJavaVersion();
@@ -155,6 +164,15 @@ final class PathFinder
         return $this->graphviz;
     }
 
+    /**
+     * [Description for resolveGraphviz]
+     *
+     * @return array|null
+     *
+     * Created at: 05/10/2026 09:04:02 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function resolveGraphviz(): ?array
     {
         // 1. Système : PATH

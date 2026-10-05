@@ -46,7 +46,7 @@ final class Application
 | |  | | (_| |_____| |  | | (_) | |_| | | | | | |  __/ |_| ||  __/
 |_|  |_|\__,_|     |_|  |_|\___/ \__,_|_|_|_| |_|\___|\__|\__\___|
 
-Present : shemaspy-cli
+Present : ShemaSpy-cli
 
 Laurent HADJADJ
 https://github.com/Laurent-hadjadj/ma-moulinette
@@ -55,6 +55,7 @@ https://github.com/Laurent-hadjadj/ma-moulinette
 BANNER;
 
     /**
+     * [Description for __construct]
      * Les paramètres sont facultatifs et servent aux tests : par défaut l'application
      * journalise dans logs/, s'ancre à la racine du dépôt et lance le vrai processus Java.
      */
@@ -343,14 +344,32 @@ BANNER;
     }
 
     /**
+     * [Description for generationDefaults]
      * Fusionne les options de génération (config.json "generation" puis ligne de
      * commande) dans les paramètres, et en déduit le moteur de rendu.
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:42:04 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function generationDefaults(): array
     {
         return array_merge($this->config->get('generation', []), $this->argumentParser->getOptions());
     }
 
+    /**
+     * [Description for applyGenerationOptions]
+     *
+     * @param array $params
+     *
+     * @return array
+     *
+     * Created at: 05/10/2026 08:42:31 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     private function applyGenerationOptions(array $params): array
     {
         // En mode interactif, les options ont déjà été validées et complétées à l'écran
@@ -487,7 +506,7 @@ BANNER;
     {
         $company = $this->config->get('application.company');
         $contact = $this->config->get('application.contact');
-        $docsUrl = $this->config->get('docs.url', 'https://github.com/Laurent-hadjadj/schemaspy-cli');
+        $docsUrl = $this->config->get('docs.url', 'https://github.com/Laurent-hadjadj/shemaspy-cli');
 
         $this->logger->blankLine();
         $this->logger->separator('═', 50);

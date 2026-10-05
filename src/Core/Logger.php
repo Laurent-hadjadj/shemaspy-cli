@@ -322,6 +322,17 @@ final class Logger
         $this->output("⚠️ " . $message, 'yellow');
     }
 
+    /**
+     * [Description for critical]
+     *
+     * @param string $message
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 08:52:23 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     */
     public function critical(string $message): void
     {
         $this->writeToFile("[CRITICAL] 🔴 " . $message);
@@ -395,32 +406,14 @@ final class Logger
         $this->output(str_repeat("═", 50), 'gray');
     }
 
-
-
     /**
-
-
      * [Description for blankLine]
-
-
      *
-
-
      * @return void
-
-
      *
-
-
      * Created at: 04/10/2026 22:38:53 (Europe/Paris)
-
-
      * @author     Laurent HADJADJ <laurent_h@me.com>
-
-
      * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
-
-
      */
     public function separator(string $char = '═', int $length = 50): void
     {

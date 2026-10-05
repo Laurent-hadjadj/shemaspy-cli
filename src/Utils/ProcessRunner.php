@@ -81,7 +81,15 @@ class ProcessRunner
     }
 
     /**
+     * [Description for startWithPopen]
+     *
+     * @param string $command
+     *
      * @return array{0: resource, 1: callable(): int}|null
+     *
+     * Created at: 05/10/2026 09:04:37 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     protected function startWithPopen(string $command): ?array
     {
@@ -94,8 +102,16 @@ class ProcessRunner
     }
 
     /**
+     * [Description for relay]
+     *
      * @param resource $stream
      * @param callable(string): void $onOutput
+     *
+     * @return void
+     *
+     * Created at: 05/10/2026 09:04:56 (Europe/Paris)
+     * @author     Laurent HADJADJ <laurent_h@me.com>
+     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
      */
     private function relay($stream, callable $onOutput): void
     {
