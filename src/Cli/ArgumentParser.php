@@ -123,7 +123,8 @@ final class ArgumentParser
      * [Description for parseGenerationOption]
      * Options de génération : drapeaux (--markdown, --no-html, ...) et valeurs
      * (--engine=, --degree=, --include=, --exclude=). Stockées à part des
-     * paramètres de connexion pour ne pas basculer en mode non-interactif.     *
+     * paramètres de connexion pour ne pas basculer en mode non-interactif.
+     *
      * @param string $arg
      *
      * @return bool true si l'argument a été reconnu
