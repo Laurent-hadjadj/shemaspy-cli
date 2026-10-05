@@ -1,6 +1,7 @@
 # Changelog
 
 Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce fichier.
+Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ## [1.1.0] - 2026-10-05
 
