@@ -247,7 +247,7 @@ final class FileSystem
      */
     public function isJarFile(string $file): bool
     {
-        return $this->getFileExtension($file) === 'jar';
+        return strtolower($this->getFileExtension($file)) === 'jar';
     }
 
     /**
@@ -263,7 +263,7 @@ final class FileSystem
      */
     public function isPropertiesFile(string $file): bool
     {
-        return $this->getFileExtension($file) === 'properties';
+        return strtolower($this->getFileExtension($file)) === 'properties';
     }
 
     /**

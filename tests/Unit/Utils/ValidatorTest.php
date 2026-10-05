@@ -206,4 +206,120 @@ final class ValidatorTest extends TestCase
             'slash'              => ['svc/prod'],
         ];
     }
+
+    // --- compléments de couverture ----------------------------------------
+
+    public function testValidDatabaseTypesCanBeReplacedAndAreReindexed(): void
+    {
+        $this->assertSame(['postgresql', 'oracle', 'mysql'], $this->validator->getValidDatabaseTypes(), 'types par défaut');
+
+        $this->validator->setValidDatabaseTypes([3 => 'oracle', 7 => 'oracle_service']);
+
+        $this->assertSame(['oracle', 'oracle_service'], $this->validator->getValidDatabaseTypes());
+        $this->validator->validateDatabaseType('oracle_service');
+        $this->expectException(\SchemaSpyCli\Exceptions\ValidationException::class);
+        $this->validator->validateDatabaseType('postgresql');
+    }
+
+    public function testUserNameLengthLimit(): void
+    {
+        $this->validator->validateUser(str_repeat('u', 63));
+        $this->expectException(\SchemaSpyCli\Exceptions\ValidationException::class);
+        $this->expectExceptionMessage('trop long');
+        $this->validator->validateUser(str_repeat('u', 64));
+    }
+
+    public function testOutputDirRejectsEmptyAndUnsafeNames(): void
+    {
+        $this->validator->validateOutputDir('report/run_1');
+
+        foreach (['', 'dossier avec espace', 'a;b', 'a|b', 'a$b', 'accentué'] as $bad) {
+            try {
+                $this->validator->validateOutputDir($bad);
+                $this->fail("« {$bad} » aurait dû être refusé");
+            } catch (\SchemaSpyCli\Exceptions\ValidationException $e) {
+                $this->assertNotSame('', $e->getMessage());
+            }
+        }
+    }
+
+    public function testOutputNameCannotBeEmpty(): void
+    {
+        $this->expectException(\SchemaSpyCli\Exceptions\ValidationException::class);
+        $this->expectExceptionMessage('ne peut pas être vide');
+        $this->validator->validateOutputName('');
+    }
+
+    public function testConsistencyRequiresADatabaseType(): void
+    {
+        foreach ([[], ['dbType' => ''], ['dbType' => null]] as $params) {
+            try {
+                $this->validator->validateConsistency($params);
+                $this->fail('ValidationException attendue');
+            } catch (\SchemaSpyCli\Exceptions\ValidationException $e) {
+                $this->assertStringContainsString('type de base de données est requis', $e->getMessage());
+            }
+        }
+    }
+
+    public function testConsistencyAcceptsLocalhostAndReservedSchemasWithoutHostKey(): void
+    {
+        $this->validator->validateConsistency(['dbType' => 'postgresql']);
+        $this->validator->validateConsistency(['dbType' => 'postgresql', 'host' => 'localhost', 'port' => 5432, 'schema' => 'public']);
+        $this->validator->validateConsistency(['dbType' => 'oracle', 'host' => 'db', 'schema' => 'PG_CATALOG']);
+        $this->addToAssertionCount(1);
+    }
+
+    /** Régression : version_compare('11', '11.0', '<') est vrai en PHP, un JDK « 11 » était refusé. */
+    public function testJavaVersionBoundary(): void
+    {
+        foreach (['11', '11.0.0', '17', '21.0.2'] as $ok) {
+            $this->validator->validateJavaVersion($ok);
+        }
+        foreach (['1.8.0', '9.0.4', '10'] as $bad) {
+            try {
+                $this->validator->validateJavaVersion($bad);
+                $this->fail("Java {$bad} aurait dû être refusé");
+            } catch (\SchemaSpyCli\Exceptions\ValidationException $e) {
+                $this->assertStringContainsString($bad, $e->getMessage());
+            }
+        }
+    }
+
+    /** @dataProvider urls */
+    public function testUrlValidation(string $url, bool $expected): void
+    {
+        $this->assertSame($expected, $this->validator->validateUrl($url));
+    }
+
+    public static function urls(): array
+    {
+        return [
+            'https'            => ['https://repo1.maven.org/maven2/x.jar', true],
+            'http avec port'   => ['http://localhost:8080/path?a=1', true],
+            'ftp'              => ['ftp://exemple.org/fichier', true],
+            'sans schéma'      => ['exemple.org/fichier', false],
+            'texte quelconque' => ['pas une url', false],
+            'vide'             => ['', false],
+        ];
+    }
+
+    /** @dataProvider filenames */
+    public function testFilenameValidation(string $name, bool $expected): void
+    {
+        $this->assertSame($expected, $this->validator->validateFilename($name));
+    }
+
+    public static function filenames(): array
+    {
+        return [
+            'simple'           => ['rapport.html', true],
+            'avec tiret'       => ['my-file_1.txt', true],
+            'espace'           => ['mon fichier.txt', false],
+            'chemin'           => ['dossier/fichier.txt', false],
+            'antislash'        => ['dossier\\fichier.txt', false],
+            'vide'             => ['', false],
+            'caractère spécial' => ['a;b.txt', false],
+        ];
+    }
 }

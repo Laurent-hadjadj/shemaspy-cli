@@ -331,4 +331,99 @@ final class FileSystemTest extends TestCase
             'chemin vide'          => ['', '', '', ''],
         ];
     }
+
+    // --- méthodes d'information sur les fichiers -------------------------
+
+    /** @dataProvider dirnames */
+    public function testFileDirname(string $path, string $expected): void
+    {
+        $this->assertSame($expected, $this->fs->getFileDirname($path));
+    }
+
+    public static function dirnames(): array
+    {
+        return [
+            'chemin imbriqué' => ['a/b/c.txt', 'a/b'],
+            'nom seul'        => ['c.txt', '.'],
+            'racine'          => ['/c.txt', DIRECTORY_SEPARATOR],
+        ];
+    }
+
+    /** @dataProvider jarNames */
+    public function testJarAndPropertiesDetection(string $file, bool $isJar, bool $isProperties): void
+    {
+        $this->assertSame($isJar, $this->fs->isJarFile($file));
+        $this->assertSame($isProperties, $this->fs->isPropertiesFile($file));
+    }
+
+    public static function jarNames(): array
+    {
+        return [
+            'jar'                  => ['jdbc/ojdbc11.jar', true, false],
+            'JAR en majuscules'    => ['OJDBC11.JAR', true, false],
+            'jar mixte'            => ['driver.Jar', true, false],
+            'properties'           => ['app.properties', false, true],
+            'PROPERTIES majuscule' => ['APP.PROPERTIES', false, true],
+            'sans extension'       => ['jar', false, false],
+            'jar.txt'              => ['monjar.txt', false, false],
+            'double extension'     => ['archive.jar.bak', false, false],
+        ];
+    }
+
+    public function testTypePredicates(): void
+    {
+        $file = $this->tmp->file('f.txt');
+        $dir = $this->tmp->dir('d');
+        $missing = $this->tmp->path . '/absent';
+
+        $this->assertTrue($this->fs->isFile($file));
+        $this->assertFalse($this->fs->isFile($dir));
+        $this->assertFalse($this->fs->isFile($missing));
+
+        $this->assertTrue($this->fs->isDirectory($dir));
+        $this->assertFalse($this->fs->isDirectory($file));
+        $this->assertFalse($this->fs->isDirectory($missing));
+
+        $this->assertTrue($this->fs->fileExists($file));
+        $this->assertTrue($this->fs->fileExists($dir), 'fileExists accepte aussi les dossiers');
+        $this->assertFalse($this->fs->fileExists($missing));
+    }
+
+    public function testModificationTime(): void
+    {
+        $file = $this->tmp->file('m.txt');
+        touch($file, 1_000_000_000);
+        clearstatcache();
+
+        $this->assertSame(1_000_000_000, $this->fs->getFileMtime($file));
+        $this->assertNull($this->fs->getFileMtime($this->tmp->path . '/absent'));
+    }
+
+    public function testChangeTime(): void
+    {
+        $file = $this->tmp->file('c.txt');
+
+        $this->assertEqualsWithDelta(time(), $this->fs->getFileCtime($file), 5);
+        $this->assertNull($this->fs->getFileCtime($this->tmp->path . '/absent'));
+    }
+
+    public function testPermissionsAreFourOctalDigits(): void
+    {
+        $file = $this->tmp->file('p.txt');
+
+        $this->assertMatchesRegularExpression('/^\d{4}$/', $this->fs->getFilePermissions($file));
+        $this->assertNull($this->fs->getFilePermissions($this->tmp->path . '/absent'));
+    }
+
+    public function testPermissionsReflectChmodOnUnix(): void
+    {
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->markTestSkipped('chmod sans effet sous Windows.');
+        }
+        $file = $this->tmp->file('x.sh');
+        chmod($file, 0640);
+        clearstatcache();
+
+        $this->assertSame('0640', $this->fs->getFilePermissions($file));
+    }
 }

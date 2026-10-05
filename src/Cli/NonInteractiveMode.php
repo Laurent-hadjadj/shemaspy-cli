@@ -176,20 +176,11 @@ final class NonInteractiveMode
      */
     private function validateConsistency(array $params): void
     {
-        // Vérifier que le type de base de données existe (paramètre 'db' en mode non-interactif)
-        if (!isset($params['db']) || empty($params['db'])) {
-            throw new ValidationException("Le type de base de données est requis (--db)");
-        }
+        // (le type de base est déjà validé par collect() : inconnu ou vide => exception)
 
-        // Vérifier que le host est valide
-        if ($params['host'] === 'localhost') {
-            // localhost est valide
-        }
-
-        // Vérifier que le schéma n'est pas réservé
+        // Un schéma système est autorisé, avec un simple avertissement
         $reservedSchemas = ['', 'information_schema', 'pg_catalog'];
         if (isset($params['schema']) && in_array(strtolower($params['schema']), $reservedSchemas)) {
-            // On autorise quand même, juste un warning
             $this->logger->warning("Le schéma '{$params['schema']}' est un schéma système");
         }
     }

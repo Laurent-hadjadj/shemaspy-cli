@@ -30,7 +30,6 @@ final class Validator
     private array $validDatabaseTypes = ['postgresql', 'oracle', 'mysql'];
 
     // Noms de schémas réservés
-    private array $reservedSchemas = ['', 'public', 'information_schema', 'pg_catalog'];
 
     /**
      * [Description for setValidDatabaseTypes]
@@ -294,7 +293,7 @@ final class Validator
     public function validateJavaVersion(string $javaVersion): void
     {
         // Vérifier que la version est au moins Java 11
-        if (version_compare($javaVersion, '11.0', '<')) {
+        if (version_compare($javaVersion, '11', '<')) {
             throw new ValidationException(
                 "Java version {$javaVersion} détectée. SchemaSpy nécessite Java 11 ou supérieur"
             );
@@ -320,16 +319,8 @@ final class Validator
             throw new ValidationException("Le type de base de données est requis");
         }
 
-        // Vérifier que le host n'est pas localhost avec un port invalide
-        if ($params['host'] === 'localhost' && isset($params['port'])) {
-            // localhost peut avoir n'importe quel port, c'est valide
-        }
-
-        // Vérifier que le schéma n'est pas réservé
-        if (isset($params['schema']) && in_array(strtolower($params['schema']), $this->reservedSchemas)) {
-            // On autorise quand même, juste un warning
-            // Pas de throw, juste une note
-        }
+        // Un schéma réservé (public, information_schema...) et un hôte « localhost » sont valides :
+        // ce ne sont pas des erreurs de cohérence.
     }
 
     /**
