@@ -8,8 +8,8 @@
         "copyright": "© Ma-Moulinette - CC-BY-NC-SA 4.0 - 2026"
     },
     "schemaspy": {
-        "version": "7.0.3-lh.2",
-        "jar": "jar/schemaspy-7.0.3-lh.2.jar",
+        "version": "7.0.3-lh.3",
+        "jar": "jar/schemaspy-7.0.3-lh.3.jar",
         "download_url": "",
         "markdown_supported": true,
         "compatibility": {

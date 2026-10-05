@@ -182,7 +182,7 @@ Ces options s'appliquent aux modes interactif et non-interactif et peuvent aussi
 | `--include=REGEX` / `--exclude=REGEX` | `-i` / `-I` : tables à garder / à écarter | toutes |
 
 **Markdown** : SchemaSpy 7.0.2 n'a pas d'export Markdown. L'option est fournie par le fork `7.0.3-lh.x` (option `-markdown`).
-Une fois ce JAR placé dans `jar/`, renseignez dans `config.json` : `schemaspy.jar`, `schemaspy.version` et `"markdown_supported": true`. Le fork `7.0.3-lh.2` (JAR `*-app.jar`, à renommer `schemaspy-7.0.3-lh.2.jar`) est la configuration livrée. Avec le JAR officiel 7.0.2, remettez `markdown_supported` à `false` : `--markdown` s'arrête alors avec un message explicite.
+Une fois ce JAR placé dans `jar/`, renseignez dans `config.json` : `schemaspy.jar`, `schemaspy.version` et `"markdown_supported": true`. Le fork `7.0.3-lh.3` (JAR `*-app.jar`, à renommer `schemaspy-7.0.3-lh.3.jar`) est la configuration livrée. Avec le JAR officiel 7.0.2, remettez `markdown_supported` à `false` : `--markdown` s'arrête alors avec un message explicite.
 
 En mode non-interactif, `host`, `database`, `schema`, `user` et `password` sont obligatoires ; leur absence fait échouer la validation avec un message listant les champs manquants.
 
@@ -214,7 +214,7 @@ L'application cherche Graphviz dans l'ordre : `PATH` système, `tools/graphviz-1
 - Le renderer `cairo` n'existe plus dans ces builds : `defaults.renderer` est vide par défaut (SchemaSpy choisit lui-même). Renseignez-le (`"gd"`, `"cairo"`...) seulement si votre Graphviz l'embarque.
 - **viz.js (`--engine=vizjs`)** : rendu JavaScript embarqué dans Java, utile sans Graphviz mais très lent et gourmand en mémoire sur un grand schéma (observé : un schéma Oracle de 300 tables, diagramme de relations non terminé après 30 minutes, 8 Go de mémoire). Préférez Graphviz natif au-delà de quelques dizaines de tables.
 - **Avertissements Graphviz** : Graphviz >= 15 émet un avertissement par table (`cell size too small for content`, `in label of node`) sans conséquence sur les diagrammes. Ils sont masqués et comptés en fin d'exécution ; `--verbose` les affiche, et le fichier de log les conserve.
-- **Graphviz 16.1.0 et SchemaSpy 7.0.2 (Windows)** : avec le JAR officiel 7.0.2, les diagrammes de résumé (`diagrams/summary/relationships.*.svg`) ne sont pas générés (`dot: can't open ... .dot: Permission denied`). Le fork `7.0.3-lh.2` n'a pas ce défaut ; avec le JAR 7.0.2, utilisez `--engine=vizjs`.
+- **Graphviz 16.1.0 et SchemaSpy 7.0.2 (Windows)** : avec le JAR officiel 7.0.2, les diagrammes de résumé (`diagrams/summary/relationships.*.svg`) ne sont pas générés (`dot: can't open ... .dot: Permission denied`). Le fork `7.0.3-lh.x` n'a pas ce défaut ; avec le JAR 7.0.2, utilisez `--engine=vizjs`.
 
 ## 7️⃣ Gestion des drivers JDBC
 
