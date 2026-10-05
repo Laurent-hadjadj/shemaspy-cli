@@ -96,7 +96,9 @@ final class ArgumentParser
 
             // Options avec valeur
             if (str_starts_with($arg, self::OPTIONS['config'])) {
-                $this->configFile = substr($arg, strlen(self::OPTIONS['config']));
+                // --config= (vide) équivaut à l'absence d'option : config/config.json par défaut
+                $value = trim(substr($arg, strlen(self::OPTIONS['config'])));
+                $this->configFile = $value !== '' ? $value : null;
                 continue;
             }
 
