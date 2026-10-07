@@ -32,6 +32,7 @@ schemaspy.last.json
 # OS
 .DS_Store
 Thumbs.db
+AGENTS.md
 
 # Tests - artefacts générés (le code des tests reste versionné)
 /tests/coverage/
