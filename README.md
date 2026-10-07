@@ -5,7 +5,7 @@
 ┃┃┃┃┃┃━━┃┃━━┃┗━┛┃\
 ┃┗┛┗┛┃━━┃┃━━┃┏━━┛\
 ┗┓┏┓┏┛━┏┫┣┓━┃┃\
-━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.1.0 Release on October 2026 !
+━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.2.0 Release on October 2026 !
 
 [![Version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
 [![PHP](https://img.shields.io/badge/PHP-%E2%89%A5%208.1-777BB4?logo=php&logoColor=white)](https://www.php.net/)
