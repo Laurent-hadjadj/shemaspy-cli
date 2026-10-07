@@ -16,11 +16,11 @@ schemaspy.last.json
 /jar/*.jar
 
 # Rapports générés par SchemaSpy / sorties de test
-/report/
+/report/*
 /test_output/
 
 # Fichier de log (écrasé à chaque exécution, cf. Logger)
-/logs/
+/logs/*
 
 # IDE
 .vscode/
@@ -32,7 +32,6 @@ schemaspy.last.json
 # OS
 .DS_Store
 Thumbs.db
-AGENTS.md
 
 # Tests - artefacts générés (le code des tests reste versionné)
 /tests/coverage/
@@ -42,3 +41,11 @@ AGENTS.md
 /coverage/
 /tools/*
 /jdbc/old/
+
+# Fichier markdown
+AGENTS.md
+!/jar/readme.md
+!/jdbc/readme.md
+!/logs/readme.md
+!/report/readme.md
+!/tools/readme.md
