@@ -3,6 +3,13 @@
 Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce fichier.
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [1.2.0] - 2026-10-07
+
+### Ajouté
+
+- ✅ `AGENTS.md` : consignes de l'application pour les agents (commandes, architecture, particularités, pièges vérifiés, limites connues), fondé sur le gabarit du socle partagé.
+- ✅ Ajout d'un fichier `README.md` pour le dossier `jar/`, `jdbc/`, `logs/`, `report/` et `tools/` pour éviter de les créer manuellement lors d'un clone.
+
 ## [1.1.0] - 2026-10-05
 
 ### Ajouté
@@ -35,6 +42,7 @@ Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ### Corrigé
 
+- Scripts `composer test` et `composer test-coverage` : ils lançaient `vendor/bin/phpunit` sans la configuration (placée dans `tests/`) et n'exécutaient donc aucun test ; ils passent maintenant `-c tests/phpunit.xml`.
 - 🛠️ `bootstrap.php` : sans `vendor/`, il se terminait avec le code 0 (`die("texte")`) : un script ou un pipeline y voyait un succès. Il écrit maintenant sur la sortie d'erreur et sort avec le code 1. `BootstrapTest` couvre l'ordre de recherche de l'autoloader (trois emplacements) et la propagation du code de retour.
 - 🛠️ `Logger::progressBar()` : division par zéro avec un total nul, `ValueError` de `str_repeat()` avec un avancement supérieur au total ou négatif ; `Logger::table()` : les colonnes se décalaient avec les caractères accentués (largeur mesurée en octets).
 - 🛠️ `Validator::validateJavaVersion()` rejetait un JDK `11` (même défaut `version_compare('11', '11.0')` que ailleurs). Code mort retiré de `Validator::validateConsistency()` (dont un accès à `$params['host']` sans vérification) et de `NonInteractiveMode`.

@@ -33,10 +33,10 @@
             "chmod +x bin/schemaspy"
         ],
         "test": [
-            "vendor/bin/phpunit"
+            "vendor/bin/phpunit -c tests/phpunit.xml"
         ],
         "test-coverage": [
-            "vendor/bin/phpunit --coverage-html coverage/"
+            "vendor/bin/phpunit -c tests/phpunit.xml --coverage-html coverage/"
         ]
     }
 }
