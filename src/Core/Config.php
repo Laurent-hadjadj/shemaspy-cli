@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2021-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Core;
@@ -41,7 +41,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:36 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function load(string $file): void
     {
@@ -96,7 +96,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:40 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -122,7 +122,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:44 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function has(string $key): bool
     {
@@ -149,7 +149,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:47 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function set(string $key, mixed $value): void
     {
@@ -173,7 +173,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:51 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getBasePath(): ?string
     {
@@ -189,7 +189,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:54 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function setBasePath(string $path): void
     {
@@ -205,7 +205,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:49:57 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getPath(string $key): string
     {
@@ -239,7 +239,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:00 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getAbsolutePath(string $path): string
     {
@@ -262,7 +262,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:05 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getDatabases(): array
     {
@@ -278,7 +278,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:08 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getDatabase(string $type): ?array
     {
@@ -292,7 +292,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:11 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getApplicationName(): string
     {
@@ -306,7 +306,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:15 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getApplicationVersion(): string
     {
@@ -320,7 +320,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:19 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getSchemaspyVersion(): string
     {
@@ -334,7 +334,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:27 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getSchemaspyJar(): string
     {
@@ -350,7 +350,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:33 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getAll(): array
     {
@@ -364,7 +364,7 @@ final class Config
      *
      * Created at: 05/10/2026 08:50:35 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getValidationConfig(): array
     {

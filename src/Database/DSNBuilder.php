@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Database;
@@ -37,7 +37,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:03 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function initializeTemplates(): void
     {
@@ -90,7 +90,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:12 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function build(array $params): string
     {
@@ -137,7 +137,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:18 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getDriverName(string $dbType): ?string
     {
@@ -153,7 +153,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:21 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getDefaultPort(string $dbType): ?int
     {
@@ -169,7 +169,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:25 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getTestQuery(string $dbType): ?string
     {
@@ -185,7 +185,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:27 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function supportsType(string $dbType): bool
     {
@@ -199,7 +199,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:30 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getAllSupportedTypes(): array
     {
@@ -216,7 +216,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:32 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function validateDSN(string $dsn, string $dbType): bool
     {
@@ -241,7 +241,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:35 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getConnectionOptions(array $params): array
     {
@@ -286,7 +286,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:39 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function parseDSN(string $dsn): array
     {
@@ -319,7 +319,7 @@ final class DSNBuilder
      *
      * Created at: 05/10/2026 08:55:42 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getExampleDSN(string $dbType): string
     {

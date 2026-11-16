@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Cli;
@@ -63,7 +63,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:30:45 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function collect(array $optionDefaults = []): ?array
     {
@@ -100,7 +100,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:32:02 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function selectDatabaseType(): string
     {
@@ -156,7 +156,7 @@ final class InteractiveMode
      *
      * Created at: 05/10/2026 08:45:20 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function collectConnectionParams(string $dbType, array $dbConfig): array
     {
@@ -215,7 +215,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:34:59 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function promptWithValidation(string $message, string $default, string $validationMethod): string
     {
@@ -248,7 +248,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:36:02 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function detectVizJs(): bool
     {
@@ -274,7 +274,7 @@ final class InteractiveMode
      *
      * Created at: 05/10/2026 08:45:31 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function showSummary(array $params): void
     {
@@ -314,7 +314,7 @@ final class InteractiveMode
      *
      * Created at: 04/10/2026 22:32:15 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function collectGenerationOptions(): GenerationOptions
     {
@@ -376,7 +376,7 @@ final class InteractiveMode
      *
      * Created at: 05/10/2026 08:45:41 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function promptDegree(int $default): int
     {
@@ -396,15 +396,14 @@ final class InteractiveMode
      *
      * Created at: 05/10/2026 08:45:47 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function promptRegex(string $message, ?string $default): ?string
     {
         do {
             $value = $this->logger->prompt($message, $default ?? '');
             try {
-                new GenerationOptions(include: $value !== '' ? $value : null);
-                return $value !== '' ? $value : null;
+                return (new GenerationOptions(include: $value !== '' ? $value : null))->include;
             } catch (ValidationException $e) {
                 $this->logger->warning($e->getMessage());
             }
@@ -420,7 +419,7 @@ final class InteractiveMode
      *
      * Created at: 04/10/2026 22:32:38 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function describeEngine(array $params): string
     {
@@ -440,7 +439,7 @@ final class InteractiveMode
      *
      * Created at: 04/10/2026 22:32:42 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function describeOutputs(GenerationOptions $options): string
     {
@@ -456,7 +455,7 @@ final class InteractiveMode
      *
      * Created at: 04/10/2026 22:32:44 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function describeFilters(GenerationOptions $options): string
     {
@@ -480,7 +479,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:37:34 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function confirm(): bool
     {
@@ -495,7 +494,7 @@ final class InteractiveMode
      *
      * Created at: 05/10/2026 08:45:55 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function lastParamsPath(): string
     {
@@ -510,7 +509,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:37:57 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function loadLastParams(): void
     {
@@ -538,7 +537,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:38:51 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function saveLastParams(array $params): void
     {
@@ -573,7 +572,7 @@ final class InteractiveMode
      *
      * Created at: 05/07/2026 10:39:45 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function showCollectProgress(string $step, int $current, int $total = self::STEPS): void
     {

@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Cli;
@@ -93,7 +93,7 @@ BANNER;
      *
      * Created at: 05/07/2026 08:58:16 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function run(): int
     {
@@ -172,7 +172,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:03:02 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function loadConfiguration(): void
     {
@@ -211,7 +211,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:03:27 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function initializeServices(): void
     {
@@ -248,14 +248,14 @@ BANNER;
      *
      * Created at: 05/07/2026 09:04:04 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function checkEnvironment(): void
     {
         // Vérifier PHP
         if (!$this->versionChecker->checkRequiredPhpVersion()) {
             $this->logger->warning(
-                "PHP 8.1 ou supérieur recommandé (actuel: " . PHP_VERSION . ")"
+                "PHP " . VersionChecker::requiredPhpLabel() . " minimum requis, " . VersionChecker::PHP_RECOMMENDED . " recommandée (actuel: " . PHP_VERSION . ")"
             );
         }
 
@@ -307,7 +307,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:09:12 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function setupBasePath(): void
     {
@@ -324,7 +324,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:09:30 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function collectParameters(): ?array
     {
@@ -353,7 +353,7 @@ BANNER;
      *
      * Created at: 05/10/2026 08:42:04 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function generationDefaults(): array
     {
@@ -369,7 +369,7 @@ BANNER;
      *
      * Created at: 05/10/2026 08:42:31 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function applyGenerationOptions(array $params): array
     {
@@ -399,7 +399,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:09:58 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function showBanner(): void
     {
@@ -446,7 +446,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:11:13 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function checkJdbcDrivers(): void
     {
@@ -499,7 +499,7 @@ BANNER;
      *
      * Created at: 05/07/2026 09:48:19 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function showFooter(): void
     {

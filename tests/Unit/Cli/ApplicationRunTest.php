@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Tests\Unit\Cli;
@@ -399,7 +399,7 @@ final class ApplicationRunTest extends TestCase
 
         [, $output] = $this->runCustom($this->connection(), versionChecker: $oldPhp);
 
-        $this->assertStringContainsString('PHP 8.1 ou supérieur recommandé', $output);
+        $this->assertStringContainsString('PHP 8.2.35, 8.3.36, 8.4.27 ou 8.5.12 minimum requis, 8.5.12 recommandée', $output);
     }
 
     public function testMissingJdkIsReportedByTheEnvironmentCheckAndByTheRunner(): void

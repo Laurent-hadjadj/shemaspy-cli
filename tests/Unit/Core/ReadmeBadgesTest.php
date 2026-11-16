@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Tests\Unit\Core;
@@ -117,8 +117,8 @@ final class ReadmeBadgesTest extends TestCase
 
     public function testLicenceBadgeMatchesTheProjectLicence(): void
     {
-        $this->assertStringContainsString('CC BY-NC-SA 4.0', $this->badge('Licence')['message']);
-        $this->assertStringContainsString('CC-BY-NC-SA 4.0', (string) (self::$config['application']['copyright'] ?? ''));
+        $this->assertStringContainsString('GPL 3.0', $this->badge('Licence')['message']);
+        $this->assertStringContainsString('GPL 3.0', (string) (self::$config['application']['copyright'] ?? ''));
     }
 
     public function testTestFiguresHaveAValidFormat(): void

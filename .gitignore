@@ -49,3 +49,8 @@ AGENTS.md
 !/logs/readme.md
 !/report/readme.md
 !/tools/readme.md
+
+# Analyse Sonar
+/.scannerwork/
+/tests/junit.xml
+

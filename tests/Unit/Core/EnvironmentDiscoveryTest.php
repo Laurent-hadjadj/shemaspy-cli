@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Tests\Unit\Core;
@@ -324,7 +324,7 @@ final class EnvironmentDiscoveryTest extends TestCase
         $env = new Environment();
 
         $this->assertSame(PHP_VERSION, $env->getPhpVersion());
-        $this->assertTrue($env->isPhpVersionCompatible(), 'le projet exige PHP 8.1+');
+        $this->assertTrue($env->isPhpVersionCompatible(), 'le projet exige PHP 8.2.35+');
         $this->assertTrue($env->isPhpVersionCompatible(PHP_VERSION));
         $this->assertFalse($env->isPhpVersionCompatible('99.0.0'));
         $this->assertTrue($env->isPhpVersionCompatible('5.6.0'));

@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Core;
@@ -40,7 +40,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:18 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getOsFamily(): string
     {
@@ -54,7 +54,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:20 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function isWindows(): bool
     {
@@ -68,7 +68,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:21 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getClasspathSeparator(): string
     {
@@ -84,7 +84,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:23 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getJavaExecutable(string $javaHome): string
     {
@@ -103,7 +103,7 @@ class Environment
      * 
      * Created at: 05/10/2026 21:37:18 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com> 
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0. 
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later). 
      */
     private function executablePath(string $home, string $executable): string
     {
@@ -138,7 +138,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:26 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getDotExecutable(string $graphvizDir): string
     {
@@ -152,7 +152,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:33 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getJavaHome(): ?string
     {
@@ -186,7 +186,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:39 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function findGraphvizInPath(): ?string
     {
@@ -203,7 +203,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:41 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getTimestamp(): string
     {
@@ -217,7 +217,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:44 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getDate(): string
     {
@@ -233,7 +233,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:33:48 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getJavaVersion(?string $javaExe = null): ?string
     {
@@ -257,7 +257,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:00 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getGraphvizVersion(?string $dotExe = null): ?string
     {
@@ -278,7 +278,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:06 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function isJavaVersionCompatible(string $minVersion = '11'): bool
     {
@@ -299,7 +299,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:09 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getPhpVersion(): string
     {
@@ -315,9 +315,9 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:11 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
-    public function isPhpVersionCompatible(string $minVersion = '8.1.0'): bool
+    public function isPhpVersionCompatible(string $minVersion = '8.2.35'): bool
     {
         return version_compare(PHP_VERSION, $minVersion, '>=');
     }
@@ -329,7 +329,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:14 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getOsFullName(): string
     {
@@ -346,7 +346,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:16 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getTempDirectory(): string
     {
@@ -361,7 +361,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:18 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getCurrentDirectory(): string
     {
@@ -377,7 +377,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:20 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function normalizePath(string $path): string
     {
@@ -393,7 +393,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:23 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function isPathAbsolute(string $path): bool
     {
@@ -410,7 +410,7 @@ class Environment
      *
      * Created at: 04/10/2026 22:34:25 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function isCommandAvailable(string $command): bool
     {
