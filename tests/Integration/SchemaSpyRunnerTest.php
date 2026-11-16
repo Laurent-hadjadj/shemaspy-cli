@@ -3,6 +3,7 @@
  * Tests d'intégration pour SchemaSpy Runner
  *
  * @author  Laurent HADJADJ - maMoulinette
+ * @license GPL-3.0-or-later
  * @version 3.1.0
  */
 

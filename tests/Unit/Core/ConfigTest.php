@@ -3,6 +3,7 @@
  * Tests unitaires pour la classe Config
  * 
  * @author  Laurent HADJADJ - maMoulinette
+ * @license GPL-3.0-or-later
  * @version 3.0.0
  */
 
