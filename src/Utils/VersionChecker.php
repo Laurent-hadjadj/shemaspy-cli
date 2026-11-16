@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Utils;
@@ -22,6 +22,20 @@ use SchemaSpyCli\Core\Logger;
  */
 final class VersionChecker
 {
+    /**
+     * Version minimale de chaque branche PHP supportée (correctif de sécurité critique du 21 octobre 2026).
+     * Une branche plus récente que la dernière listée est acceptée ; une branche plus ancienne est refusée.
+     */
+    public const PHP_MINIMUM_BY_BRANCH = [
+        '8.2' => '8.2.35',
+        '8.3' => '8.3.36',
+        '8.4' => '8.4.27',
+        '8.5' => '8.5.12',
+    ];
+
+    /** Version cible recommandée. */
+    public const PHP_RECOMMENDED = '8.5.12';
+
     /**
      * Les trois derniers paramètres sont facultatifs et servent aux tests : par défaut le vrai
      * environnement (java du système, extensions chargées, PHP_VERSION).
@@ -43,7 +57,7 @@ final class VersionChecker
      *
      * Created at: 05/10/2026 09:09:49 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function checkJavaVersion(): ?string
     {
@@ -59,8 +73,17 @@ final class VersionChecker
      *
      * Created at: 05/10/2026 09:09:57 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
+    /** Ex. « 8.2.35, 8.3.36, 8.4.27 ou 8.5.12 ». */
+    public static function requiredPhpLabel(): string
+    {
+        $list = array_values(self::PHP_MINIMUM_BY_BRANCH);
+        $last = array_pop($list);
+
+        return implode(', ', $list) . ' ou ' . $last;
+    }
+
     public function checkPhpVersion(): string
     {
         return $this->phpVersion ?? PHP_VERSION;
@@ -73,11 +96,19 @@ final class VersionChecker
      *
      * Created at: 05/10/2026 09:10:00 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function checkRequiredPhpVersion(): bool
     {
-        return version_compare($this->checkPhpVersion(), '8.1.0', '>=');
+        $version = $this->checkPhpVersion();
+        $branch = implode('.', array_slice(explode('.', $version), 0, 2));
+
+        if (isset(self::PHP_MINIMUM_BY_BRANCH[$branch])) {
+            return version_compare($version, self::PHP_MINIMUM_BY_BRANCH[$branch], '>=');
+        }
+
+        // Branche absente de la liste : acceptée seulement si plus récente que la dernière branche listée
+        return version_compare($branch, (string) array_key_last(self::PHP_MINIMUM_BY_BRANCH), '>');
     }
 
     /**
@@ -87,7 +118,7 @@ final class VersionChecker
      *
      * Created at: 05/10/2026 09:10:02 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function checkExtensions(): array
     {
@@ -136,7 +167,7 @@ final class VersionChecker
      *
      * Created at: 05/10/2026 09:10:05 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function getSchemaSpyVersion(string $jarFile): ?string
     {
@@ -170,7 +201,7 @@ final class VersionChecker
      *
      * Created at: 05/10/2026 09:10:10 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function checkCompatibility(array $params): array
     {
@@ -178,7 +209,7 @@ final class VersionChecker
 
         // Vérifier la version PHP
         if (!$this->checkRequiredPhpVersion()) {
-            $issues[] = "PHP 8.1 ou supérieur requis (actuel: " . $this->checkPhpVersion() . ")";
+            $issues[] = "PHP " . self::requiredPhpLabel() . " minimum requis (actuel: " . $this->checkPhpVersion() . ")";
         }
 
         // Vérifier les extensions

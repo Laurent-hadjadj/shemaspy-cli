@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Tests\Unit\Utils;
@@ -45,7 +45,7 @@ final class VersionCheckerTest extends TestCase
      * @param string|null $java version renvoyée par `java -version` (null = java absent)
      * @param list<string> $loaded extensions simulées comme chargées
      */
-    private function checker(?string $java = '17.0.8', array $loaded = self::ALL_EXTENSIONS, ?string $php = '8.3.0'): VersionChecker
+    private function checker(?string $java = '17.0.8', array $loaded = self::ALL_EXTENSIONS, ?string $php = '8.5.12'): VersionChecker
     {
         $logger = new Logger(false);
         $logger->setQuiet(true);
@@ -67,12 +67,13 @@ final class VersionCheckerTest extends TestCase
         $checker = new VersionChecker($logger);
 
         $this->assertSame(PHP_VERSION, $checker->checkPhpVersion());
-        $this->assertTrue($checker->checkRequiredPhpVersion(), 'le projet exige PHP 8.1+, les tests tournent donc dessus');
+        // Le résultat dépend du correctif installé sur le poste (8.5.5 ou 8.5.12...) : seul le type est vérifié
+        $this->assertIsBool($checker->checkRequiredPhpVersion());
     }
 
     public function testPhpVersionCanBeSimulated(): void
     {
-        $this->assertSame('8.3.0', $this->checker()->checkPhpVersion());
+        $this->assertSame('8.5.12', $this->checker()->checkPhpVersion());
     }
 
     /** @dataProvider phpVersions */
@@ -87,10 +88,18 @@ final class VersionCheckerTest extends TestCase
             '7.4'                 => ['7.4.33', false],
             '8.0 (dernier)'       => ['8.0.30', false],
             'juste en dessous'    => ['8.0.99', false],
-            '8.1.0 exact'         => ['8.1.0', true],
-            '8.1.0 en dev'        => ['8.1.0-dev', false],
-            '8.2'                 => ['8.2.12', true],
-            '8.5'                 => ['8.5.5', true],
+            '8.1 (fin de support)' => ['8.1.30', false],
+            '8.2.34 (vulnérable)' => ['8.2.34', false],
+            '8.2.35 exact'        => ['8.2.35', true],
+            '8.2.35 en dev'       => ['8.2.35-dev', false],
+            '8.3.35 (vulnérable)' => ['8.3.35', false],
+            '8.3.36'              => ['8.3.36', true],
+            '8.4.26 (vulnérable)' => ['8.4.26', false],
+            '8.4.27'              => ['8.4.27', true],
+            '8.5.11 (vulnérable)' => ['8.5.11', false],
+            '8.5.12'              => ['8.5.12', true],
+            '8.5.5 (vulnérable)'  => ['8.5.5', false],
+            '8.6 (future)'        => ['8.6.0', true],
             '9.0'                 => ['9.0.0', true],
         ];
     }
@@ -256,7 +265,7 @@ final class VersionCheckerTest extends TestCase
     {
         $issues = $this->checker(php: '8.0.30')->checkCompatibility([]);
 
-        $this->assertSame(['PHP 8.1 ou supérieur requis (actuel: 8.0.30)'], $issues);
+        $this->assertSame(['PHP 8.2.35, 8.3.36, 8.4.27 ou 8.5.12 minimum requis (actuel: 8.0.30)'], $issues);
     }
 
     public function testMissingExtensionsAreReported(): void
@@ -300,7 +309,7 @@ final class VersionCheckerTest extends TestCase
         $issues = $this->checker(java: null, loaded: [], php: '7.4.33')->checkCompatibility([]);
 
         $this->assertCount(3, $issues);
-        $this->assertStringContainsString('PHP 8.1', $issues[0]);
+        $this->assertStringContainsString('PHP 8.2.35', $issues[0]);
         $this->assertStringContainsString('Extensions PHP manquantes', $issues[1]);
         $this->assertStringContainsString('Java non trouvé', $issues[2]);
     }
