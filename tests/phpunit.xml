@@ -26,6 +26,9 @@
             <clover outputFile="coverage.xml"/>
         </report>
     </coverage>
+    <logging>
+        <junit outputFile="junit.xml"/>
+    </logging>
     <php>
         <ini name="display_errors" value="On"/>
         <ini name="error_reporting" value="E_ALL"/>
