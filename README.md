@@ -5,11 +5,11 @@
 ┃┃┃┃┃┃━━┃┃━━┃┗━┛┃\
 ┃┗┛┗┛┃━━┃┃━━┃┏━━┛\
 ┗┓┏┓┏┛━┏┫┣┓━┃┃\
-━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.2.0 Release on October 2026 !
+━┗┛┗┛━━┗━━┛━┗┛  NeXt 1.3.0 Release on November 2026 !
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue)](CHANGELOG.md)
-[![PHP](https://img.shields.io/badge/PHP-%E2%89%A5%208.1-777BB4?logo=php&logoColor=white)](https://www.php.net/)
-[![PHP testé](https://img.shields.io/badge/PHP%20test%C3%A9-8.5.5%20NTS-777BB4?logo=php&logoColor=white)](https://www.php.net/releases/)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue)](CHANGELOG.md)
+[![PHP](https://img.shields.io/badge/PHP-%E2%89%A5%208.2.35-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![PHP testé](https://img.shields.io/badge/PHP%20test%C3%A9-8.5.12%20ZTS-777BB4?logo=php&logoColor=white)](https://www.php.net/releases/)
 [![SchemaSpy](https://img.shields.io/badge/SchemaSpy-7.0.3--lh.3-orange)](https://github.com/schemaspy/schemaspy)
 [![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=openjdk&logoColor=white)](https://adoptium.net/)
 [![Graphviz](https://img.shields.io/badge/Graphviz-16.1.0-1F4E79)](https://graphviz.org/)
@@ -18,10 +18,10 @@
 [![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1?logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![MariaDB](https://img.shields.io/badge/MariaDB-10.6--11.6-003545?logo=mariadb&logoColor=white)](https://mariadb.org/)
 [![SQL Server](https://img.shields.io/badge/SQL%20Server-2016--2022-CC2927?logo=microsoftsqlserver&logoColor=white)](https://www.microsoft.com/sql-server)
-[![Tests](https://img.shields.io/badge/tests-716%20passed-success?logo=phpunit&logoColor=white)](tests/)
-[![Assertions](https://img.shields.io/badge/assertions-1546-success)](tests/)
-[![Coverage](https://img.shields.io/badge/coverage-98.28%25-brightgreen)](tests/phpunit.xml)
-[![Licence](https://img.shields.io/badge/licence-CC%20BY--NC--SA%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Tests](https://img.shields.io/badge/tests-724%20passed-success?logo=phpunit&logoColor=white)](tests/)
+[![Assertions](https://img.shields.io/badge/assertions-1555-success)](tests/)
+[![Coverage](https://img.shields.io/badge/coverage-98.29%25-brightgreen)](tests/phpunit.xml)
+[![Licence](https://img.shields.io/badge/licence-GPL%203.0-blue)](LICENSE)
 
 ShemaSpy-cli est une application PHP qui pilote l'application [SchemaSpy](https://github.com/schemaspy/schemaspy) 7.0.3-lh.3 (Java, fork avec export Markdown) pour générer de la documentation de bases de données. Elle propose un mode interactif (guidé, avec prompts) et un mode non-interactif piloté par des options en ligne de commande, pensé pour être appelé depuis un pipeline CI/CD.
 
@@ -39,15 +39,21 @@ ShemaSpy-cli est une application PHP qui pilote l'application [SchemaSpy](https:
 - [🔟 Architecture du code](#-architecture-du-code)
 - [🔟+1️⃣ Dépannage](#1️⃣-dépannage)
 - [🔟+2️⃣ Limitations connues](#2️⃣limitations-connues)
+- [Licence](#licence)
 
 ## 1️⃣ Prérequis
 
-> [!NOTE]
-> Cette version de shameSpy-cli est conçue pour fonctionner avec SchemaSpy 7.0.2 (Java 17) et la version 7.0.3-lh-2. La version 7.0.3-lh-2 est un fork. Elle corrige des bugs de génération de diagrammes sur Windows et ajoute l'option Markdown.
+> [!WARNING]
+> Cette version de ShemaSpy-cli est conçue pour fonctionner avec SchemaSpy 7.0.2 (Java 17) et la version 7.0.3-lh.3.\
+> La version 7.0.3-lh.3 est un fork. Elle corrige des bugs de génération de diagrammes sur Windows et ajoute l'option Markdown.
+
+_
+> [!IMPORTANT]
+> **PHP 8.5.12 est la version recommandée** : elle corrige une faille de sécurité critique. Le correctif du 21 octobre 2026 est publié dans les versions 8.5.12, 8.4.27, 8.3.36 et 8.2.35 : **le minimum dépend de la branche** (voir `composer.json`, contrôlé aussi au lancement) et toute version antérieure à ces numéros expose à la faille.
 
 | Composant | Version minimale | Rôle |
 | --- | --- | --- |
-| PHP | 8.5 (CLI) | Exécute l'application |
+| PHP | 8.2.35, 8.3.36, 8.4.27 ou 8.5.12 (CLI) minimum selon la branche ; **8.5.12 recommandée** | Exécute l'application |
 | Extensions PHP | `pdo`, `json`, + le(s) driver(s) PDO du/des SGBD ciblé(s) (`pdo_pgsql`, `pdo_mysql`, `pdo_oci`...) | Test de connexion avant de lancer SchemaSpy |
 | Java (JRE/JDK) | 17 (JDK 8/11 du système ignoré au profit de `tools/jdk17`) | Exécute le JAR SchemaSpy |
 | Composer | — | Installation des dépendances PHP |
@@ -264,12 +270,30 @@ Scripts utilitaires (`php bin/<script>.php [chemin/vers/config.json]`) :
 ## 8️⃣ Tests
 
 ```bash
-composer test              # ou : vendor/bin/phpunit -c tests/phpunit.xml
-composer test-coverage     # rapport HTML dans tests/coverage/
-vendor/bin/phpunit tests/Unit/Core/ConfigTest.php   # un fichier précis
+composer test              # lance les tests unitaires et d'intégration (PHPUnit) avec sortie console
+composer test-coverage     # rapport HTML dans tests/coverage/, Clover (coverage.xml) et JUnit (junit.xml) dans tests/
+
+# Commandes directes PHPUnit (sans composer) :
+php vendor/bin/phpunit -c tests/phpunit.xml
+php -d xdebug.mode=coverage vendor/bin/phpunit -c tests/phpunit.xml
 ```
 
-58 tests (unitaires + un test d'intégration sur `Runner`), organisés sous `tests/Unit/` et `tests/Integration/`. Le test `DSNBuilderTest::testGetConnectionOptionsMySQL` est ignoré automatiquement si l'extension `pdo_mysql` n'est pas chargée localement.
+Tests unitaires et d'intégration (nombre et couverture : badges en tête de ce fichier), organisés sous `tests/Unit/` et `tests/Integration/`. Le test `DSNBuilderTest::testGetConnectionOptionsMySQL` est ignoré automatiquement si l'extension `pdo_mysql` n'est pas chargée localement.
+
+**SonarQube** : lancer `composer test-coverage` avant `sonar-scanner` ; `sonar-project.properties` lit `tests/coverage.xml` (couverture) et `tests/junit.xml` (résultats des tests).
+
+> [!TIP]
+> Pour le lancement de SonarQube, utilisez un token d'accès personnel plutôt que votre mot de passe, et ne l'écrivez jamais dans un fichier versionné (ni `sonar-project.properties`, ni ce README).
+
+```bash
+# Windows (cmd)
+set SONAR_TOKEN=<votre-token>
+npx sonarqube-scanner
+
+# Linux / macOS
+export SONAR_TOKEN=<votre-token>
+npx sonarqube-scanner
+```
 
 ## 9️⃣ Docker
 
@@ -313,6 +337,15 @@ Le fichier `.properties` généré pour SchemaSpy (qui contient le mot de passe 
 ## 🔟+2️⃣Limitations connues
 
 Une base de données Oracle avec des tables partitionnées peut générer des diagrammes incomplets (tables manquantes dans les diagrammes de relations). Le problème est connu sur SchemaSpy 7.0.2 et 7.0.3-lh-2, et n'a pas de solution simple côté ShemaSpy-cli.
+
+## Licence
+
+- **Code** : [GNU GPL 3.0 ou ultérieure](LICENSE) (`GPL-3.0-or-later`), licence à copyleft : le logiciel reste ouvert.
+- **Documentation** (`README.md`, `CHANGELOG.md`) : [CC BY-SA 4.0](docs/LICENSE.md).
+
+**Changement de licence.** Depuis le 4 novembre 2026, le code est distribué sous GPL 3.0. Jusqu'à la version 1.2.0 incluse, les mentions étaient contradictoires (MIT dans `composer.json`, [CC BY-NC-SA 4.0](LICENSES/CC-BY-NC-SA-4.0.txt) dans le README et les en-têtes) ; ces versions restent sous la licence qui les accompagnait. L'usage commercial est désormais autorisé, à condition de respecter le copyleft. Les en-têtes de tous les fichiers sources mentionnent la GPL 3.0 ou ultérieure ; en cas de contradiction, le fichier [LICENSE](LICENSE) prévaut. **Motif et portée du changement : [LICENSING.md](LICENSING.md)**. Attributions : [NOTICE](NOTICE).
+
+**Composants tiers.** SchemaSpy (LGPL 3.0), Graphviz et les pilotes JDBC sont des programmes externes que ShemaSpy-cli lance ou télécharge : ils ne sont pas distribués dans ce dépôt et conservent leur propre licence.
 
 ## Changelog
 

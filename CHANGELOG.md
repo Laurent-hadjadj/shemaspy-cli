@@ -3,6 +3,24 @@
 Toutes les modifications notables de SchemaSpy CLI seront documentées dans ce fichier.
 Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
+## [1.3.0] - 2026-11-16
+
+### Modifié
+
+- 🔄 **Licence** : le code passe à **GNU GPL 3.0 ou ultérieure** (`LICENSE`), licence à copyleft qui garantit que l'outil reste ouvert, et la documentation à **CC BY-SA 4.0** (`docs/LICENSE.md`). Les mentions précédentes étaient contradictoires (MIT dans `composer.json`, CC BY-NC-SA 4.0 dans le README et les en-têtes) ; le texte CC BY-NC-SA est conservé dans `LICENSES/CC-BY-NC-SA-4.0.txt`. Motif et portée : `LICENSING.md`.
+- 🔄 Ajout des fichiers `NOTICE` (attributions et composants tiers : SchemaSpy, Graphviz, pilotes JDBC) et `LICENSING.md` (motif et portée du changement).
+- Les en-têtes de tous les fichiers sources (`src/`, `bin/`, `tests/`) mentionnent désormais la GPL 3.0 ou ultérieure.
+- 🔄 **PHP** : la version recommandée est désormais **8.5.12**, qui corrige une faille de sécurité critique. Le minimum passe de PHP 8.1 à **8.2.35, 8.3.36, 8.4.27 ou 8.5.12 selon la branche** (correctif du 21 octobre) : contrainte `composer.json` et contrôle au lancement (`VersionChecker`) par branche.
+
+### Corrigé
+
+- 🛠️ **Droits de `dot`** : le `dot` créé à partir de `dot_builtins` (`PathFinder`) est exécutable par le propriétaire et son groupe (`0750`) et non plus par tous (`0755`) ; test ajouté (ignoré sous Windows).
+- 🛠️ **`InteractiveMode::promptRegex`** : suppression d'une instanciation inutile de `GenerationOptions` signalée par SonarQube (même comportement).
+
+### Outillage
+
+- 🧰 **SonarQube** : `sonar-project.properties` déclare les rapports de couverture (`tests/coverage.xml`) et de tests (`tests/junit.xml`) ; `tests/phpunit.xml` produit désormais le rapport JUnit ; nom du projet corrigé (`ShemaSpy-Cli`). Les rapports générés et `.scannerwork/` sont ignorés par git.
+
 ## [1.2.0] - 2026-10-07
 
 ### Ajouté
@@ -42,7 +60,7 @@ Le format s'inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/).
 
 ### Corrigé
 
-- Scripts `composer test` et `composer test-coverage` : ils lançaient `vendor/bin/phpunit` sans la configuration (placée dans `tests/`) et n'exécutaient donc aucun test ; ils passent maintenant `-c tests/phpunit.xml`.
+- 🛠️ Scripts `composer test` et `composer test-coverage` : ils lançaient `vendor/bin/phpunit` sans la configuration (placée dans `tests/`) et n'exécutaient donc aucun test ; ils passent maintenant `-c tests/phpunit.xml`.
 - 🛠️ `bootstrap.php` : sans `vendor/`, il se terminait avec le code 0 (`die("texte")`) : un script ou un pipeline y voyait un succès. Il écrit maintenant sur la sortie d'erreur et sort avec le code 1. `BootstrapTest` couvre l'ordre de recherche de l'autoloader (trois emplacements) et la propagation du code de retour.
 - 🛠️ `Logger::progressBar()` : division par zéro avec un total nul, `ValueError` de `str_repeat()` avec un avancement supérieur au total ou négatif ; `Logger::table()` : les colonnes se décalaient avec les caractères accentués (largeur mesurée en octets).
 - 🛠️ `Validator::validateJavaVersion()` rejetait un JDK `11` (même défaut `version_compare('11', '11.0')` que ailleurs). Code mort retiré de `Validator::validateConsistency()` (dont un accès à `$params['host']` sans vérification) et de `NonInteractiveMode`.
