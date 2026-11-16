@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Tests\Unit\Utils;
@@ -187,6 +187,18 @@ final class PathFinderTest extends TestCase
         $this->assertSame('embarqué', $gv['source']);
         $this->assertFileExists($expectedDot);
         $this->assertSame('builtins', file_get_contents($expectedDot));
+    }
+
+    public function testProvisionedDotIsNotWorldExecutable(): void
+    {
+        if (DIRECTORY_SEPARATOR === '\\') {
+            $this->markTestSkipped("Les droits Unix ne s'appliquent pas sous Windows.");
+        }
+        $builtins = $this->tmp->file('tools/graphviz/bin/dot_builtins', 'builtins');
+
+        $this->finder(new FakeEnvironment())->detectGraphviz();
+
+        $this->assertSame('0750', substr(sprintf('%o', fileperms(dirname($builtins) . '/dot')), -4));
     }
 
     public function testExplicitConfigGraphviz(): void

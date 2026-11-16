@@ -5,10 +5,10 @@
  *  --------------
  *  Copyright (c) 2015-2026.
  *  Laurent HADJADJ <laurent_h@me.com>.
- *  Licensed Creative Common  CC-BY-NC-SA 4.0.
+ *  Licensed GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
  *  ---
  *  Vous pouvez obtenir une copie de la licence à l'adresse suivante :
- *  http://creativecommons.org/licenses/by-nc-sa/4.0/
+ *  https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 namespace SchemaSpyCli\Utils;
@@ -53,7 +53,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:52:33 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function detectJava(): ?array
     {
@@ -72,7 +72,7 @@ final class PathFinder
      *
      * Created at: 05/10/2026 09:03:52 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function resolveJava(): ?array
     {
@@ -109,7 +109,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:53:10 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function requiredJavaVersion(): ?string
     {
@@ -123,7 +123,7 @@ final class PathFinder
      * @return list<array{0: string, 1: string}> [home, source] dans l'ordre de priorité     *
      * Created at: 04/10/2026 22:53:29 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function javaCandidates(): array
     {
@@ -153,7 +153,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:53:49 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     public function detectGraphviz(): ?array
     {
@@ -171,7 +171,7 @@ final class PathFinder
      *
      * Created at: 05/10/2026 09:04:02 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function resolveGraphviz(): ?array
     {
@@ -215,7 +215,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:54:09 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function provisionDotExecutable(string $dotExe): void
     {
@@ -231,7 +231,7 @@ final class PathFinder
         }
 
         if (@copy($builtins, $dotExe)) {
-            @chmod($dotExe, 0755);
+            @chmod($dotExe, 0750); // exécutable par le propriétaire et son groupe, jamais par tous
             $this->logger?->debug("dot absent : créé à partir de dot_builtins ({$dotExe})");
         } else {
             $this->logger?->warning("Impossible de créer {$dotExe} à partir de dot_builtins");
@@ -249,7 +249,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:54:24 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function describeJava(string $home, string $executable, string $source): array
     {
@@ -269,7 +269,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:54:27 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function describeGraphviz(string $path, string $executable, string $source): array
     {
@@ -285,7 +285,7 @@ final class PathFinder
      *
      * Created at: 04/10/2026 22:54:30 (Europe/Paris)
      * @author     Laurent HADJADJ <laurent_h@me.com>
-     * @copyright  Licensed Ma-Moulinette - Creative Common CC-BY-NC-SA 4.0.
+     * @copyright  Licensed Ma-Moulinette - GNU GPL 3.0 ou ultérieure (GPL-3.0-or-later).
      */
     private function osConfigKey(): string
     {
